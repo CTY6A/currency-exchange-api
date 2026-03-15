@@ -76,7 +76,7 @@ public class ExchangeRateDAO {
     }
 
     public boolean save(ExchangeRate exchangeRate) {
-        if (exchangeRate == null) {
+        if (exchangeRate == null || isExchangeRateExist(exchangeRate)) {
             return false;
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE)) {
@@ -124,10 +124,10 @@ public class ExchangeRateDAO {
             throw new RuntimeException(e);
         }
 
-        return new ExchangeRate(id, findByID(BaseCurrencyId), findByID(TargetCurrencyId), Rate);
+        return new ExchangeRate(id, findCurrencyByID(BaseCurrencyId), findCurrencyByID(TargetCurrencyId), Rate);
     }
 
-    private Currency findByID(Integer id) {
+    private Currency findCurrencyByID(Integer id) {
         if (id == null || id < 1) {
             return null;
         }

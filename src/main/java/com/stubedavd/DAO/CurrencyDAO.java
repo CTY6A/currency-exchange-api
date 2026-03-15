@@ -56,17 +56,24 @@ public class CurrencyDAO {
     }
 
     public boolean save(Currency currency) {
-        if (currency == null) {
+        if (currency == null || isCurrencyExist(currency)) {
             return false;
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE)) {
             preparedStatement.setString(1, currency.getCode());
-            preparedStatement.setString(2, currency.getFullName());
+            preparedStatement.setString(2, currency.getName());
             preparedStatement.setString(3, currency.getSign());
             preparedStatement.executeUpdate();
             return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean isCurrencyExist(Currency currency) {
+        if (currency == null) {
+            return false;
+        }
+        return null != findByCode(currency.getCode());
     }
 }
