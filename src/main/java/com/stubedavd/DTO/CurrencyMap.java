@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class CurrencyMap {
-    public static Currency mapResultSet(ResultSet resultSet) {
+    private final Currency currency;
+
+    public CurrencyMap(ResultSet resultSet) {
         int id;
         String name;
         String code;
@@ -21,6 +23,10 @@ public class CurrencyMap {
             throw new RuntimeException(e);
         }
 
-        return new Currency(id, name, code, sign);
+        this.currency = new Currency(id, name, code, sign);
+    }
+
+    public Currency getCurrency() {
+        return currency;
     }
 }

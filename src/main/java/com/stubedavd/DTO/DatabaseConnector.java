@@ -1,10 +1,12 @@
 package com.stubedavd.DTO;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Objects;
 
 public class DatabaseConnector {
     private static final String DRIVER = "org.sqlite.JDBC";
@@ -15,19 +17,22 @@ public class DatabaseConnector {
 
     private static DatabaseConnector instance;
 
-    private DatabaseConnector() {
+    private DatabaseConnector() throws IOException {
         try {
             Class.forName(DRIVER);
             URL resource = DatabaseConnector.class.getResource(DATABASE_PATH);
-            String path = Objects.requireNonNull(resource).getPath();
+            if (resource == null) {
+                throw new FileNotFoundException(DATABASE_PATH);
+            }
+            String path = resource.getPath();
             String url = DATABASE_URL + path;
             this.connection = DriverManager.getConnection(url);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException | ClassNotFoundException | FileNotFoundException e) {
+            throw new IOException(e);
         }
     }
 
-    public static synchronized DatabaseConnector getInstance() {
+    public static synchronized DatabaseConnector getInstance() throws IOException {
         if (instance == null) {
             instance = new DatabaseConnector();
         }
