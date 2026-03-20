@@ -8,16 +8,19 @@
         <list>
           <option value="currency-exchange-api" />
           <option value="currency-exchange-api" />
+          <option value="currency-exchange" />
         </list>
       </option>
       <option name="ignoredPackages">
         <list>
           <option value="org.xerial:sqlite-jdbc:3.41.0.0" />
           <option value="com.fasterxml.jackson.core:jackson-core:2.14.2" />
+          <option value="com.fasterxml.jackson.core:jackson-core:2.14.2" />
         </list>
       </option>
       <option name="ignoredReasons">
         <list>
+          <option value="Не эксплуатируема" />
           <option value="Не эксплуатируема" />
           <option value="Не эксплуатируема" />
         </list>

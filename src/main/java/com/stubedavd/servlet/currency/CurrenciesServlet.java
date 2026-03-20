@@ -1,15 +1,16 @@
-package com.stubedavd.servlets;
+package com.stubedavd.servlet.currency;
 
-import com.stubedavd.DAO.CurrencyDAO;
-import com.stubedavd.DTO.ResponseHelper;
-import com.stubedavd.models.Currency;
-import com.stubedavd.models.ErrorResponse;
+import com.stubedavd.exception.AlreadyExistsException;
+import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.utils.ResponseHelper;
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.response.ErrorResponse;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.util.List;
 
 @WebServlet("/currencies")
@@ -19,10 +20,10 @@ public class CurrenciesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            CurrencyDAO dao = new CurrencyDAO();
+            CurrencyRepository dao = new CurrencyRepository();
             List<Currency> currencies = dao.findAll();
             new ResponseHelper(resp, currencies);
-        } catch (IOException e) {
+        } catch (InfrastructureException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             ErrorResponse error = new ErrorResponse("Database is unavailable");
             new ResponseHelper(resp, error);
@@ -36,24 +37,18 @@ public class CurrenciesServlet extends HttpServlet {
         String sign = req.getParameter("sign");
         if (isParametersValid(name, code, sign)) {
             try {
-                CurrencyDAO dao = new CurrencyDAO();
-                Currency currency = dao.findByCode(code);
-                if (currency == null) {
-                    currency = new Currency(ZERO_ID, name, code.toUpperCase(), sign);
-                    Currency resultCurrency = dao.save(currency);
-                    if (resultCurrency == null) {
-                        throw new IOException("Currency could not be saved");
-                    }
-                    resp.setStatus(HttpServletResponse.SC_CREATED);
-                    new ResponseHelper(resp, resultCurrency);
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                    ErrorResponse error = new ErrorResponse("Currency already exists");
-                    new ResponseHelper(resp, error);
-                }
-            } catch (IOException e) {
+                CurrencyRepository repository = new CurrencyRepository();
+                Currency currency = new Currency(ZERO_ID, name, code.toUpperCase(), sign);
+                Currency resultCurrency = repository.save(currency);
+                resp.setStatus(HttpServletResponse.SC_CREATED);
+                new ResponseHelper(resp, resultCurrency);
+            } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 ErrorResponse error = new ErrorResponse("Database is unavailable");
+                new ResponseHelper(resp, error);
+            } catch (AlreadyExistsException e) {
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                ErrorResponse error = new ErrorResponse("Currency already exists");
                 new ResponseHelper(resp, error);
             }
         } else {

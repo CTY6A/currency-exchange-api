@@ -1,20 +1,20 @@
-package com.stubedavd.services;
+package com.stubedavd.service;
 
-import com.stubedavd.DAO.ExchangeRateDAO;
-import com.stubedavd.models.Currency;
-import com.stubedavd.models.ExchangeRate;
+import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.ExchangeRate;
+import com.stubedavd.exception.InfrastructureException;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 
 public class ExchangeService {
     private static final int ZERO_ID = 1;
     public static final String USD_CODE = "USD";
 
-    public ExchangeRate findExchangeRate(ExchangeRate exchangeRate) throws IOException {
+    public ExchangeRate findExchangeRate(ExchangeRate exchangeRate) throws InfrastructureException {
         ExchangeRate result = null;
         if (exchangeRate != null) {
-            ExchangeRateDAO dao = new ExchangeRateDAO();
+            ExchangeRateRepository dao = new ExchangeRateRepository();
             Currency baseCurrency = exchangeRate.getBaseCurrency();
             Currency targetCurrency = exchangeRate.getTargetCurrency();
             ExchangeRate reverseExchangeRate = dao.findByPair(targetCurrency.getCode(), baseCurrency.getCode());

@@ -1,6 +1,6 @@
-package com.stubedavd.DTO;
+package com.stubedavd.utils;
 
-import com.stubedavd.models.Currency;
+import com.stubedavd.model.Currency;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

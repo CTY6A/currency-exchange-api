@@ -1,20 +1,21 @@
-package com.stubedavd.servlets;
+package com.stubedavd.servlet.exchange;
 
-import com.stubedavd.DAO.CurrencyDAO;
-import com.stubedavd.DAO.ExchangeRateDAO;
-import com.stubedavd.DTO.ResponseHelper;
-import com.stubedavd.models.Currency;
-import com.stubedavd.models.ErrorResponse;
-import com.stubedavd.models.Exchange;
-import com.stubedavd.models.ExchangeRate;
-import com.stubedavd.services.ExchangeService;
+import com.stubedavd.model.response.ExchangeResponse;
+import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.utils.ResponseHelper;
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.response.ErrorResponse;
+import com.stubedavd.model.ExchangeRate;
+import com.stubedavd.service.ExchangeService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -31,31 +32,31 @@ public class ExchangeServlet extends HttpServlet {
                 targetCurrencyCode = targetCurrencyCode.toUpperCase();
                 BigDecimal amount = new BigDecimal(amountString);
 
-                ExchangeRateDAO exchangeRateDAO = new ExchangeRateDAO();
-                ExchangeRate exchangeRate = exchangeRateDAO.findByPair(baseCurrencyCode, targetCurrencyCode);
+                ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
+                ExchangeRate exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
                 if (exchangeRate == null) {
-                    CurrencyDAO currencyDAO = new CurrencyDAO();
-                    Currency baseCurrency = currencyDAO.findByCode(baseCurrencyCode);
-                    Currency targetCurrency = currencyDAO.findByCode(targetCurrencyCode);
-                    if (baseCurrency != null && targetCurrency != null) {
-                        exchangeRate = new ExchangeRate(ZERO_ID, baseCurrency, targetCurrency, amount);
+                    CurrencyRepository currencyRepository = new CurrencyRepository();
+                    Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
+                    Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
+                    if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
+                        exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), amount);
                         ExchangeService exchangeService = new ExchangeService();
                         ExchangeRate resultExchangeRate = exchangeService.findExchangeRate(exchangeRate);
                         if (resultExchangeRate == null) {
-                            throw new IOException("Exchange rate could not be saved");
+                            throw new InfrastructureException();
                         }
-                        Exchange exchange = new Exchange(resultExchangeRate, amount);
-                        new ResponseHelper(resp, exchange);
+                        ExchangeResponse exchangeResponse = new ExchangeResponse(resultExchangeRate, amount);
+                        new ResponseHelper(resp, exchangeResponse);
                     } else {
                         resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                         ErrorResponse error = new ErrorResponse("Currency could not be found");
                         new ResponseHelper(resp, error);
                     }
                 } else {
-                    Exchange exchange = new Exchange(exchangeRate, amount);
-                    new ResponseHelper(resp, exchange);
+                    ExchangeResponse exchangeResponse = new ExchangeResponse(exchangeRate, amount);
+                    new ResponseHelper(resp, exchangeResponse);
                 }
-            } catch (IOException e) {
+            } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 ErrorResponse error = new ErrorResponse("Database is unavailable");
                 new ResponseHelper(resp, error);

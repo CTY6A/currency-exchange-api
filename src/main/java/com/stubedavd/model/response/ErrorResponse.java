@@ -1,4 +1,4 @@
-package com.stubedavd.models;
+package com.stubedavd.model.response;
 
 public class ErrorResponse {
     private final String message;
@@ -9,12 +9,5 @@ public class ErrorResponse {
 
     public String getMessage() {
         return message;
-    }
-
-    @Override
-    public String toString() {
-        return "ErrorResponse{" +
-                "message='" + message + '\'' +
-                '}';
     }
 }

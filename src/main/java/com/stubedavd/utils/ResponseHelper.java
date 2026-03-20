@@ -1,4 +1,4 @@
-package com.stubedavd.DTO;
+package com.stubedavd.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;

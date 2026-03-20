@@ -1,11 +1,12 @@
-package com.stubedavd.servlets;
+package com.stubedavd.servlet.exchange;
 
-import com.stubedavd.DAO.CurrencyDAO;
-import com.stubedavd.DAO.ExchangeRateDAO;
-import com.stubedavd.DTO.ResponseHelper;
-import com.stubedavd.models.Currency;
-import com.stubedavd.models.ErrorResponse;
-import com.stubedavd.models.ExchangeRate;
+import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.utils.ResponseHelper;
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.response.ErrorResponse;
+import com.stubedavd.model.ExchangeRate;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,11 +15,21 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     private static final int ZERO_ID = 1;
     public static final int TWO_CODES_AND_SLASH = 7;
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getMethod().equals("PATCH")) {
+            doPatch(req, resp);
+        } else {
+            super.service(req, resp);
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
@@ -32,7 +43,7 @@ public class ExchangeRateServlet extends HttpServlet {
             String baseCurrencyCode = exchangeRateCodes.substring(0, 3).toUpperCase();
             String targetCurrencyCode = exchangeRateCodes.substring(3).toUpperCase();
             try {
-                ExchangeRateDAO dao = new ExchangeRateDAO();
+                ExchangeRateRepository dao = new ExchangeRateRepository();
                 ExchangeRate exchangeRate = dao.findByPair(baseCurrencyCode, targetCurrencyCode);
                 if (exchangeRate == null) {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -41,20 +52,11 @@ public class ExchangeRateServlet extends HttpServlet {
                 } else {
                     new ResponseHelper(resp, exchangeRate);
                 }
-            } catch (IOException e) {
+            } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 ErrorResponse error = new ErrorResponse("Database is unavailable");
                 new ResponseHelper(resp, error);
             }
-        }
-    }
-
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getMethod().equals("PATCH")) {
-            doPatch(req, resp);
-        } else {
-            super.service(req, resp);
         }
     }
 
@@ -75,17 +77,17 @@ public class ExchangeRateServlet extends HttpServlet {
                     targetCurrencyCode = targetCurrencyCode.toUpperCase();
                     BigDecimal rate = new BigDecimal(rateString);
 
-                    ExchangeRateDAO exchangeRateDAO = new ExchangeRateDAO();
-                    ExchangeRate exchangeRate = exchangeRateDAO.findByPair(baseCurrencyCode, targetCurrencyCode);
+                    ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
+                    ExchangeRate exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
                     if (exchangeRate != null) {
-                        CurrencyDAO currencyDAO = new CurrencyDAO();
-                        Currency baseCurrency = currencyDAO.findByCode(baseCurrencyCode);
-                        Currency targetCurrency = currencyDAO.findByCode(targetCurrencyCode);
-                        if (baseCurrency != null && targetCurrency != null) {
-                            exchangeRate = new ExchangeRate(ZERO_ID, baseCurrency, targetCurrency, rate);
-                            ExchangeRate resultCurrency = exchangeRateDAO.update(exchangeRate);
+                        CurrencyRepository currencyRepository = new CurrencyRepository();
+                        Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
+                        Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
+                        if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
+                            exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
+                            ExchangeRate resultCurrency = exchangeRateRepository.update(exchangeRate);
                             if (resultCurrency == null) {
-                                throw new IOException("Exchange rate could not be saved");
+                                throw new InfrastructureException();
                             }
                             new ResponseHelper(resp, resultCurrency);
                         } else {
@@ -95,10 +97,10 @@ public class ExchangeRateServlet extends HttpServlet {
                         }
                     } else {
                         resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                        ErrorResponse error = new ErrorResponse("Exchange rate could not be found");
+                        ErrorResponse error = new ErrorResponse("ExchangeResponse rate could not be found");
                         new ResponseHelper(resp, error);
                     }
-                } catch (IOException e) {
+                } catch (InfrastructureException e) {
                     resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     ErrorResponse error = new ErrorResponse("Database is unavailable");
                     new ResponseHelper(resp, error);

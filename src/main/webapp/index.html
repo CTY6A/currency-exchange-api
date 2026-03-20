@@ -55,7 +55,7 @@
 
     <section class="mt-xxl-5">
         <h2>Exchange Rates</h2>
-        <table class="table exchange-rates-table">
+        <table class="table exchangeResponse-rates-table">
             <thead>
                 <tr>
                     <th>Currency</th>
@@ -68,16 +68,16 @@
                     <td>USDRUB</td>
                     <td>1.00</td>
                     <td>
-                        <button type="button" class="btn btn-secondary btn-sm exchange-rate-edit" data-bs-toggle="modal"
-                                data-bs-target="#edit-exchange-rate-modal">Edit</button>
+                        <button type="button" class="btn btn-secondary btn-sm exchangeResponse-rate-edit" data-bs-toggle="modal"
+                                data-bs-target="#edit-exchangeResponse-rate-modal">Edit</button>
                     </td>
                 </tr>
             </tbody>
         </table>
     </section>
 
-    <!-- Edit exchange rate modal -->
-    <div class="modal fade" id="edit-exchange-rate-modal" tabindex="-1" role="dialog">
+    <!-- Edit exchangeResponse rate modal -->
+    <div class="modal fade" id="edit-exchangeResponse-rate-modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -87,8 +87,8 @@
                 <div class="modal-body">
                     <form>
                         <div class="form-group">
-                            <label for="exchange-rate-input">Exchange Rate:</label>
-                            <input type="text" class="form-control" id="exchange-rate-input" value="1.00">
+                            <label for="exchangeResponse-rate-input">Exchange Rate:</label>
+                            <input type="text" class="form-control" id="exchangeResponse-rate-input" value="1.00">
                         </div>
                     </form>
                 </div>
@@ -104,7 +104,7 @@
         <div class="row">
             <div class="col col-6">
                 <h2>Add New Exchange Rate</h2>
-                <form id="add-exchange-rate">
+                <form id="add-exchangeResponse-rate">
                     <div class="form-group">
                         <label for="new-rate-base-currency">Base currency</label>
                         <select class="form-control" name="baseCurrencyCode" id="new-rate-base-currency">
@@ -118,8 +118,8 @@
                         </select>
                     </div>
                     <div class="form-group mt-3">
-                        <label for="exchange-rate">Exchange Rate</label>
-                        <input type="text" placeholder="1.23" class="form-control" name="rate" id="exchange-rate">
+                        <label for="exchangeResponse-rate">Exchange Rate</label>
+                        <input type="text" placeholder="1.23" class="form-control" name="rate" id="exchangeResponse-rate">
                     </div>
                     <button type="submit" class="btn btn-primary mt-3">Add Exchange Rate</button>
                 </form>

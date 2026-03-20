@@ -1,17 +1,16 @@
-package com.stubedavd.servlets;
+package com.stubedavd.servlet.currency;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stubedavd.DAO.CurrencyDAO;
-import com.stubedavd.DTO.ResponseHelper;
-import com.stubedavd.models.Currency;
-import com.stubedavd.models.ErrorResponse;
+import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.utils.ResponseHelper;
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.response.ErrorResponse;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.Optional;
 
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
@@ -25,16 +24,16 @@ public class CurrencyServlet extends HttpServlet {
         } else {
             String code = pathInfo.substring(1);
             try {
-                CurrencyDAO dao = new CurrencyDAO();
-                Currency currency = dao.findByCode(code);
-                if (currency == null) {
+                CurrencyRepository dao = new CurrencyRepository();
+                Optional<Currency> currencyOptional = dao.findByCode(code);
+                if (currencyOptional.isEmpty()) {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     ErrorResponse error = new ErrorResponse("Currency not found");
                     new ResponseHelper(resp, error);
                 } else {
-                    new ResponseHelper(resp, currency);
+                    new ResponseHelper(resp, currencyOptional.get());
                 }
-            } catch (IOException e) {
+            } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 ErrorResponse error = new ErrorResponse("Database is unavailable");
                 new ResponseHelper(resp, error);

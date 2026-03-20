@@ -1,19 +1,20 @@
-package com.stubedavd.servlets;
+package com.stubedavd.servlet.exchange;
 
-import com.stubedavd.DAO.CurrencyDAO;
-import com.stubedavd.DAO.ExchangeRateDAO;
-import com.stubedavd.DTO.ResponseHelper;
-import com.stubedavd.models.Currency;
-import com.stubedavd.models.ErrorResponse;
-import com.stubedavd.models.ExchangeRate;
+import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.utils.ResponseHelper;
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.response.ErrorResponse;
+import com.stubedavd.model.ExchangeRate;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
@@ -22,10 +23,10 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            ExchangeRateDAO dao = new ExchangeRateDAO();
+            ExchangeRateRepository dao = new ExchangeRateRepository();
             List<ExchangeRate> exchangeRates = dao.findAll();
             new ResponseHelper(resp, exchangeRates);
-        } catch (IOException e) {
+        } catch (InfrastructureException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             ErrorResponse error = new ErrorResponse("Database is unavailable");
             new ResponseHelper(resp, error);
@@ -43,17 +44,17 @@ public class ExchangeRatesServlet extends HttpServlet {
                 targetCurrencyCode = targetCurrencyCode.toUpperCase();
                 BigDecimal rate = new BigDecimal(rateString);
 
-                ExchangeRateDAO exchangeRateDAO = new ExchangeRateDAO();
-                ExchangeRate exchangeRate = exchangeRateDAO.findByPair(baseCurrencyCode, targetCurrencyCode);
+                ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
+                ExchangeRate exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
                 if (exchangeRate == null) {
-                    CurrencyDAO currencyDAO = new CurrencyDAO();
-                    Currency baseCurrency = currencyDAO.findByCode(baseCurrencyCode);
-                    Currency targetCurrency = currencyDAO.findByCode(targetCurrencyCode);
-                    if (baseCurrency != null && targetCurrency != null) {
-                        exchangeRate = new ExchangeRate(ZERO_ID, baseCurrency, targetCurrency, rate);
-                        ExchangeRate resultExchangeRate = exchangeRateDAO.save(exchangeRate);
+                    CurrencyRepository currencyRepository = new CurrencyRepository();
+                    Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
+                    Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
+                    if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
+                        exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
+                        ExchangeRate resultExchangeRate = exchangeRateRepository.save(exchangeRate);
                         if (resultExchangeRate == null) {
-                            throw new IOException("Exchange rate could not be saved");
+                            throw new InfrastructureException();
                         }
                         resp.setStatus(HttpServletResponse.SC_CREATED);
                         new ResponseHelper(resp, resultExchangeRate);
@@ -64,10 +65,10 @@ public class ExchangeRatesServlet extends HttpServlet {
                     }
                 } else {
                     resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                    ErrorResponse error = new ErrorResponse("Exchange rate already exists");
+                    ErrorResponse error = new ErrorResponse("ExchangeResponse rate already exists");
                     new ResponseHelper(resp, error);
                 }
-            } catch (IOException e) {
+            } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 ErrorResponse error = new ErrorResponse("Database is unavailable");
                 new ResponseHelper(resp, error);

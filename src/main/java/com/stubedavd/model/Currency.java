@@ -1,4 +1,4 @@
-package com.stubedavd.models;
+package com.stubedavd.model;
 
 public class Currency {
     private final int id;

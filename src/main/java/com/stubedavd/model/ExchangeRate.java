@@ -1,4 +1,4 @@
-package com.stubedavd.models;
+package com.stubedavd.model;
 
 import java.math.BigDecimal;
 

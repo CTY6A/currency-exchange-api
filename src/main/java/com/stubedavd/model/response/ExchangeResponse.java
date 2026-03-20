@@ -1,15 +1,18 @@
-package com.stubedavd.models;
+package com.stubedavd.model.response;
+
+import com.stubedavd.model.Currency;
+import com.stubedavd.model.ExchangeRate;
 
 import java.math.BigDecimal;
 
-public class Exchange {
+public class ExchangeResponse {
     private final Currency baseCurrency;
     private final Currency targetCurrency;
     private final BigDecimal rate;
     private final BigDecimal amount;
     private final BigDecimal convertedAmount;
 
-    public Exchange(ExchangeRate exchangeRate, BigDecimal amount) {
+    public ExchangeResponse(ExchangeRate exchangeRate, BigDecimal amount) {
         this.baseCurrency = exchangeRate.getBaseCurrency();
         this.targetCurrency = exchangeRate.getTargetCurrency();
         this.rate = exchangeRate.getRate();
@@ -39,7 +42,7 @@ public class Exchange {
 
     @Override
     public String toString() {
-        return "Exchange{" +
+        return "ExchangeResponse{" +
                 "baseCurrency=" + baseCurrency +
                 ", targetCurrency=" + targetCurrency +
                 ", rate=" + rate +
