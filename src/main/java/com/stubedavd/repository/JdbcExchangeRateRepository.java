@@ -1,6 +1,6 @@
 package com.stubedavd.repository;
 
-import com.stubedavd.exception.AlreadyExistsException;
+import com.stubedavd.exception.AlreadyExistException;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.utils.DataSource;
 import com.stubedavd.model.Currency;
@@ -118,7 +118,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == INTEGRITY_CONSTRAINT_VIOLATION_CODE) {
-                throw new AlreadyExistsException(e);
+                throw new AlreadyExistException(e);
             }
             throw new InfrastructureException(e);
         }

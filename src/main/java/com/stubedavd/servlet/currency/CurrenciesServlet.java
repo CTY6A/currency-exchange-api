@@ -1,12 +1,14 @@
 package com.stubedavd.servlet.currency;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stubedavd.exception.AlreadyExistsException;
-import com.stubedavd.repository.JdbcCurrencyRepository;
+import com.stubedavd.exception.AlreadyExistException;
+import com.stubedavd.exception.ValidationException;
+import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.exception.InfrastructureException;
-import com.stubedavd.utils.ResponseHelper;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.response.ErrorResponse;
+import com.stubedavd.utils.Validator;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,8 +20,21 @@ import java.util.List;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
     private static final int ZERO_ID = 0;
-    private static final JdbcCurrencyRepository repository = new JdbcCurrencyRepository();
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    private CurrencyRepository repository;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+
+        this.repository =
+                (CurrencyRepository) getServletContext().getAttribute("currencyRepository");
+
+        if (repository == null) {
+            throw new IllegalStateException("currencyRepository not found");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -35,46 +50,32 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String name = req.getParameter("name");
         String code = req.getParameter("code");
         String sign = req.getParameter("sign");
-        if (isParametersValid(name, code, sign)) {
             try {
-                JdbcCurrencyRepository repository = new JdbcCurrencyRepository();
+                Validator.validateCurrency(name, code, sign);
                 Currency currency = new Currency(ZERO_ID, name, code.toUpperCase(), sign);
                 Currency resultCurrency = repository.save(currency);
                 resp.setStatus(HttpServletResponse.SC_CREATED);
-                new ResponseHelper(resp, resultCurrency);
+                mapper.writeValue(resp.getWriter(), resultCurrency);
             } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                ErrorResponse error = new ErrorResponse("Database is unavailable");
-                new ResponseHelper(resp, error);
-            } catch (AlreadyExistsException e) {
+                mapper.writeValue(resp.getWriter(), new ErrorResponse(
+                        "Database is unavailable"
+                ));
+            } catch (AlreadyExistException e) {
                 resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                ErrorResponse error = new ErrorResponse("Currency already exists");
-                new ResponseHelper(resp, error);
-            }
-        } else {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponse error = new ErrorResponse("Invalid parameters");
-            new ResponseHelper(resp, error);
-        }
-    }
+                mapper.writeValue(resp.getWriter(), new ErrorResponse(
+                        "Currency already exists"
+                ));
+            } catch (ValidationException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                mapper.writeValue(resp.getWriter(), new ErrorResponse(
+                        "Invalid parameters"
+                ));
 
-    private boolean isParametersValid(String name, String code, String sign) {
-        if (name == null || name.isBlank()) {
-            return false;
         }
-
-        if (code == null || !code.matches("[A-z]{3}")) {
-            return false;
-        }
-
-        if (sign == null || sign.isBlank() || sign.length() > 2 ) {
-            return false;
-        }
-
-        return true;
     }
 }
