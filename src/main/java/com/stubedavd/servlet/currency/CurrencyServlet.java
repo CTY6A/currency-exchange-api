@@ -1,6 +1,6 @@
 package com.stubedavd.servlet.currency;
 
-import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.repository.JdbcCurrencyRepository;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.utils.ResponseHelper;
 import com.stubedavd.model.Currency;
@@ -24,7 +24,7 @@ public class CurrencyServlet extends HttpServlet {
         } else {
             String code = pathInfo.substring(1);
             try {
-                CurrencyRepository dao = new CurrencyRepository();
+                JdbcCurrencyRepository dao = new JdbcCurrencyRepository();
                 Optional<Currency> currencyOptional = dao.findByCode(code);
                 if (currencyOptional.isEmpty()) {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);

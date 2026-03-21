@@ -8,7 +8,6 @@ import java.io.PrintWriter;
 
 public class ResponseHelper {
     public ResponseHelper(HttpServletResponse response, Object object) {
-        response.setContentType("application/json; charset=UTF-8");
         try {
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(object);

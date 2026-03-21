@@ -1,8 +1,8 @@
 package com.stubedavd.servlet.exchange;
 
 import com.stubedavd.model.response.ExchangeResponse;
-import com.stubedavd.repository.CurrencyRepository;
-import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.repository.JdbcCurrencyRepository;
+import com.stubedavd.repository.JdbcExchangeRateRepository;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.utils.ResponseHelper;
 import com.stubedavd.model.Currency;
@@ -32,10 +32,10 @@ public class ExchangeServlet extends HttpServlet {
                 targetCurrencyCode = targetCurrencyCode.toUpperCase();
                 BigDecimal amount = new BigDecimal(amountString);
 
-                ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-                Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
+                JdbcExchangeRateRepository exchangeRateRepository = new JdbcExchangeRateRepository();
+                Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
                 if (exchangeRate.isEmpty()) {
-                    CurrencyRepository currencyRepository = new CurrencyRepository();
+                    JdbcCurrencyRepository currencyRepository = new JdbcCurrencyRepository();
                     Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
                     Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
                     if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {

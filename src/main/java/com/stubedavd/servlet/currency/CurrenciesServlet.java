@@ -1,7 +1,8 @@
 package com.stubedavd.servlet.currency;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stubedavd.exception.AlreadyExistsException;
-import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.repository.JdbcCurrencyRepository;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.utils.ResponseHelper;
 import com.stubedavd.model.Currency;
@@ -11,22 +12,25 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.util.List;
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
-    private static final int ZERO_ID = 1;
+    private static final int ZERO_ID = 0;
+    private static final JdbcCurrencyRepository repository = new JdbcCurrencyRepository();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            CurrencyRepository dao = new CurrencyRepository();
-            List<Currency> currencies = dao.findAll();
-            new ResponseHelper(resp, currencies);
+            List<Currency> currencies = repository.findAll();
+            mapper.writeValue(resp.getWriter(), currencies);
         } catch (InfrastructureException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponse error = new ErrorResponse("Database is unavailable");
-            new ResponseHelper(resp, error);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(
+                    "Database is unavailable"
+            ));
         }
     }
 
@@ -37,7 +41,7 @@ public class CurrenciesServlet extends HttpServlet {
         String sign = req.getParameter("sign");
         if (isParametersValid(name, code, sign)) {
             try {
-                CurrencyRepository repository = new CurrencyRepository();
+                JdbcCurrencyRepository repository = new JdbcCurrencyRepository();
                 Currency currency = new Currency(ZERO_ID, name, code.toUpperCase(), sign);
                 Currency resultCurrency = repository.save(currency);
                 resp.setStatus(HttpServletResponse.SC_CREATED);

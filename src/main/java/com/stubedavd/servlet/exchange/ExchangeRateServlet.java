@@ -1,7 +1,7 @@
 package com.stubedavd.servlet.exchange;
 
-import com.stubedavd.repository.CurrencyRepository;
-import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.repository.JdbcCurrencyRepository;
+import com.stubedavd.repository.JdbcExchangeRateRepository;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.utils.ResponseHelper;
 import com.stubedavd.model.Currency;
@@ -43,8 +43,8 @@ public class ExchangeRateServlet extends HttpServlet {
             String baseCurrencyCode = exchangeRateCodes.substring(0, 3).toUpperCase();
             String targetCurrencyCode = exchangeRateCodes.substring(3).toUpperCase();
             try {
-                ExchangeRateRepository dao = new ExchangeRateRepository();
-                Optional<ExchangeRate> exchangeRate = dao.findByPair(baseCurrencyCode, targetCurrencyCode);
+                JdbcExchangeRateRepository dao = new JdbcExchangeRateRepository();
+                Optional<ExchangeRate> exchangeRate = dao.findByCodes(baseCurrencyCode, targetCurrencyCode);
                 if (exchangeRate.isEmpty()) {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     ErrorResponse error = new ErrorResponse("No exchange rate found for " + baseCurrencyCode + " " + targetCurrencyCode);
@@ -77,10 +77,10 @@ public class ExchangeRateServlet extends HttpServlet {
                     targetCurrencyCode = targetCurrencyCode.toUpperCase();
                     BigDecimal rate = new BigDecimal(rateString);
 
-                    ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-                    Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
+                    JdbcExchangeRateRepository exchangeRateRepository = new JdbcExchangeRateRepository();
+                    Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
                     if (exchangeRate.isPresent()) {
-                        CurrencyRepository currencyRepository = new CurrencyRepository();
+                        JdbcCurrencyRepository currencyRepository = new JdbcCurrencyRepository();
                         Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
                         Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
                         if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {

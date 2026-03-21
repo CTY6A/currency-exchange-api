@@ -1,8 +1,8 @@
 package com.stubedavd.servlet.exchange;
 
 import com.stubedavd.exception.AlreadyExistsException;
-import com.stubedavd.repository.CurrencyRepository;
-import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.repository.JdbcCurrencyRepository;
+import com.stubedavd.repository.JdbcExchangeRateRepository;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.utils.ResponseHelper;
 import com.stubedavd.model.Currency;
@@ -24,7 +24,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            ExchangeRateRepository dao = new ExchangeRateRepository();
+            JdbcExchangeRateRepository dao = new JdbcExchangeRateRepository();
             List<ExchangeRate> exchangeRates = dao.findAll();
             new ResponseHelper(resp, exchangeRates);
         } catch (InfrastructureException e) {
@@ -45,8 +45,8 @@ public class ExchangeRatesServlet extends HttpServlet {
                 targetCurrencyCode = targetCurrencyCode.toUpperCase();
                 BigDecimal rate = new BigDecimal(rateString);
 
-                ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-                    CurrencyRepository currencyRepository = new CurrencyRepository();
+                JdbcExchangeRateRepository exchangeRateRepository = new JdbcExchangeRateRepository();
+                    JdbcCurrencyRepository currencyRepository = new JdbcCurrencyRepository();
                     Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
                     Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
                     if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {

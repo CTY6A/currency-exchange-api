@@ -15,9 +15,7 @@ public class DataSource {
 
     private final String url;
 
-    private static DataSource instance;
-
-    public DataSource() throws InfrastructureException {
+    public DataSource() {
         try {
             Class.forName(DRIVER);
             URL resource = DataSource.class.getResource(DATABASE_PATH);
@@ -26,15 +24,15 @@ public class DataSource {
             }
             this.url = DATABASE_URL + resource.getPath();
         } catch (ClassNotFoundException | FileNotFoundException e) {
-            throw new InfrastructureException(e);
+            throw new RuntimeException(e);
         }
     }
 
-    public Connection getConnection() throws InfrastructureException {
+    public Connection getConnection() {
         try {
             return DriverManager.getConnection(url);
         } catch (SQLException e) {
-            throw new InfrastructureException();
+            throw new RuntimeException();
         }
     }
 }
