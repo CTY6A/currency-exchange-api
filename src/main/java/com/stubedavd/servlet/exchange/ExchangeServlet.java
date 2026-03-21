@@ -33,15 +33,15 @@ public class ExchangeServlet extends HttpServlet {
                 BigDecimal amount = new BigDecimal(amountString);
 
                 ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-                ExchangeRate exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
-                if (exchangeRate == null) {
+                Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
+                if (exchangeRate.isEmpty()) {
                     CurrencyRepository currencyRepository = new CurrencyRepository();
                     Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
                     Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
                     if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
-                        exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), amount);
+                        exchangeRate = Optional.of(new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), amount));
                         ExchangeService exchangeService = new ExchangeService();
-                        ExchangeRate resultExchangeRate = exchangeService.findExchangeRate(exchangeRate);
+                        ExchangeRate resultExchangeRate = exchangeService.findExchangeRate(exchangeRate.orElse(null));
                         if (resultExchangeRate == null) {
                             throw new InfrastructureException();
                         }
@@ -53,7 +53,7 @@ public class ExchangeServlet extends HttpServlet {
                         new ResponseHelper(resp, error);
                     }
                 } else {
-                    ExchangeResponse exchangeResponse = new ExchangeResponse(exchangeRate, amount);
+                    ExchangeResponse exchangeResponse = new ExchangeResponse(exchangeRate.orElse(null), amount);
                     new ResponseHelper(resp, exchangeResponse);
                 }
             } catch (InfrastructureException e) {

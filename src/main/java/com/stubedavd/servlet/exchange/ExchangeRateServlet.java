@@ -44,8 +44,8 @@ public class ExchangeRateServlet extends HttpServlet {
             String targetCurrencyCode = exchangeRateCodes.substring(3).toUpperCase();
             try {
                 ExchangeRateRepository dao = new ExchangeRateRepository();
-                ExchangeRate exchangeRate = dao.findByPair(baseCurrencyCode, targetCurrencyCode);
-                if (exchangeRate == null) {
+                Optional<ExchangeRate> exchangeRate = dao.findByPair(baseCurrencyCode, targetCurrencyCode);
+                if (exchangeRate.isEmpty()) {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     ErrorResponse error = new ErrorResponse("No exchange rate found for " + baseCurrencyCode + " " + targetCurrencyCode);
                     new ResponseHelper(resp, error);
@@ -78,14 +78,14 @@ public class ExchangeRateServlet extends HttpServlet {
                     BigDecimal rate = new BigDecimal(rateString);
 
                     ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-                    ExchangeRate exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
-                    if (exchangeRate != null) {
+                    Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
+                    if (exchangeRate.isPresent()) {
                         CurrencyRepository currencyRepository = new CurrencyRepository();
                         Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
                         Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
                         if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
-                            exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
-                            ExchangeRate resultCurrency = exchangeRateRepository.update(exchangeRate);
+                            exchangeRate = Optional.of(new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate));
+                            ExchangeRate resultCurrency = exchangeRateRepository.update(exchangeRate.orElse(null));
                             if (resultCurrency == null) {
                                 throw new InfrastructureException();
                             }

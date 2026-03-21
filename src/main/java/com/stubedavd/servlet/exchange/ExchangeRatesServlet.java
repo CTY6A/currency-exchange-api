@@ -1,5 +1,6 @@
 package com.stubedavd.servlet.exchange;
 
+import com.stubedavd.exception.AlreadyExistsException;
 import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.repository.ExchangeRateRepository;
 import com.stubedavd.exception.InfrastructureException;
@@ -45,13 +46,11 @@ public class ExchangeRatesServlet extends HttpServlet {
                 BigDecimal rate = new BigDecimal(rateString);
 
                 ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-                ExchangeRate exchangeRate = exchangeRateRepository.findByPair(baseCurrencyCode, targetCurrencyCode);
-                if (exchangeRate == null) {
                     CurrencyRepository currencyRepository = new CurrencyRepository();
                     Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
                     Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
                     if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
-                        exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
+                        ExchangeRate exchangeRate = new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
                         ExchangeRate resultExchangeRate = exchangeRateRepository.save(exchangeRate);
                         if (resultExchangeRate == null) {
                             throw new InfrastructureException();
@@ -63,14 +62,13 @@ public class ExchangeRatesServlet extends HttpServlet {
                         ErrorResponse error = new ErrorResponse("Currency could not be found");
                         new ResponseHelper(resp, error);
                     }
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                    ErrorResponse error = new ErrorResponse("ExchangeResponse rate already exists");
-                    new ResponseHelper(resp, error);
-                }
             } catch (InfrastructureException e) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 ErrorResponse error = new ErrorResponse("Database is unavailable");
+                new ResponseHelper(resp, error);
+            } catch (AlreadyExistsException e) {
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                ErrorResponse error = new ErrorResponse("ExchangeResponse rate already exists");
                 new ResponseHelper(resp, error);
             }
         } else {

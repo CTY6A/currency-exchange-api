@@ -2,7 +2,7 @@ package com.stubedavd.repository;
 
 import com.stubedavd.exception.AlreadyExistsException;
 import com.stubedavd.exception.InfrastructureException;
-import com.stubedavd.utils.DatabaseConnector;
+import com.stubedavd.utils.DataSource;
 import com.stubedavd.model.Currency;
 
 import java.sql.*;
@@ -13,16 +13,16 @@ import java.util.Optional;
 public class CurrencyRepository {
     private static final int INTEGRITY_CONSTRAINT_VIOLATION_CODE = 19;
 
-    private final DatabaseConnector databaseConnector;
+    private final DataSource dataSource;
 
     public CurrencyRepository() throws InfrastructureException {
-        this.databaseConnector = new DatabaseConnector();
+        this.dataSource = new DataSource();
     }
 
     public List<Currency> findAll() throws InfrastructureException {
         final String query = "SELECT * FROM Currencies";
 
-        try (Connection connection = databaseConnector.getConnection()){
+        try (Connection connection = dataSource.getConnection()){
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     List<Currency> currencies = new ArrayList<>();
@@ -40,7 +40,7 @@ public class CurrencyRepository {
     public Optional<Currency> findByCode(String code) throws InfrastructureException {
         final String query = "SELECT * FROM Currencies WHERE Code = ?";
 
-        try (Connection connection = databaseConnector.getConnection()){
+        try (Connection connection = dataSource.getConnection()){
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, code);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -58,7 +58,7 @@ public class CurrencyRepository {
     public Currency save(Currency currency) throws InfrastructureException, AlreadyExistsException {
         final String query = "INSERT INTO Currencies(Code, FullName, Sign) VALUES (?,?,?) RETURNING ID";
 
-        try (Connection connection = databaseConnector.getConnection()){
+        try (Connection connection = dataSource.getConnection()){
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 String code = currency.getCode();
                 String name = currency.getName();
