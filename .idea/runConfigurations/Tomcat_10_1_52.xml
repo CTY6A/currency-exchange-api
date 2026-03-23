@@ -5,7 +5,7 @@
     <deployment>
       <artifact name="currency-exchange:war exploded">
         <settings>
-          <option name="CONTEXT_PATH" value="" />
+          <option name="CONTEXT_PATH" value="/currency_exchange_war_exploded" />
         </settings>
       </artifact>
     </deployment>

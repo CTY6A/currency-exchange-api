@@ -3,6 +3,7 @@ package com.stubedavd.utils;
 import com.stubedavd.exception.InfrastructureException;
 
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,8 +23,8 @@ public class DataSource {
             if (resource == null) {
                 throw new FileNotFoundException(DATABASE_PATH);
             }
-            this.url = DATABASE_URL + resource.getPath();
-        } catch (ClassNotFoundException | FileNotFoundException e) {
+            this.url = DATABASE_URL + resource.toURI().getPath();
+        } catch (ClassNotFoundException | FileNotFoundException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
