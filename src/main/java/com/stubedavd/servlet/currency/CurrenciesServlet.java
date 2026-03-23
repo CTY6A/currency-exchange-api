@@ -32,7 +32,7 @@ public class CurrenciesServlet extends HttpServlet {
                 (CurrencyRepository) getServletContext().getAttribute("currencyRepository");
 
         if (repository == null) {
-            throw new IllegalStateException("currencyRepository not found");
+            throw new IllegalStateException("Currency repository not found");
         }
     }
 

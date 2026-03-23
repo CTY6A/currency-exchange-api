@@ -92,7 +92,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
         }
     }
 
-    public ExchangeRate save(ExchangeRate exchangeRate) throws InfrastructureException {
+    public ExchangeRate save(ExchangeRate exchangeRate) throws InfrastructureException, AlreadyExistException {
         final String SAVE =
             """
                 INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate)
