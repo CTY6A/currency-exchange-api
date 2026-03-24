@@ -1,5 +1,6 @@
 package com.stubedavd.servlet.exchange;
 
+import com.stubedavd.service.ExchangeRateService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,41 +8,35 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.io.IOException;
 
 import com.stubedavd.servlet.BaseServlet;
-import com.stubedavd.repository.ExchangeRateRepository;
-import com.stubedavd.repository.CurrencyRepository;
-import com.stubedavd.repository.JdbcCurrencyRepository;
-import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
 import com.stubedavd.utils.Validator;
-import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.exception.NotFoundException;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends BaseServlet {
 
-    private ExchangeRateRepository repository;
+    private ExchangeRateService exchangeRateService;
 
     @Override
     public void init() throws ServletException {
 
         super.init();
 
-        repository =
-                (ExchangeRateRepository) getServletContext().getAttribute("exchangeRateRepository");
+        exchangeRateService =
+                (ExchangeRateService) getServletContext().getAttribute("exchangeRateService");
 
-        if (repository == null) {
-            throw new NotFoundException("No exchange rate repository found");
+        if (exchangeRateService == null) {
+            throw new NotFoundException("No exchange rate service found");
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        List<ExchangeRate> exchangeRates = repository.findAll();
+        List<ExchangeRate> exchangeRates = exchangeRateService.findAll();
         sendJson(response, HttpServletResponse.SC_OK, exchangeRates);
     }
 
@@ -58,22 +53,7 @@ public class ExchangeRatesServlet extends BaseServlet {
         targetCurrencyCode = targetCurrencyCode.toUpperCase();
         BigDecimal rate = new BigDecimal(rateString);
 
-        CurrencyRepository currencyRepository = new JdbcCurrencyRepository();
-        Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
-        Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
-
-        if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
-
-            ExchangeRate exchangeRate = new ExchangeRate(baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
-            ExchangeRate resultExchangeRate = repository.save(exchangeRate);
-
-            if (resultExchangeRate == null) {
-                throw new InfrastructureException("Database is available");
-            }
-
-            sendJson(response, HttpServletResponse.SC_CREATED, resultExchangeRate);
-        } else {
-            throw new NotFoundException("Currency could not be found");
-        }
+        ExchangeRate exchangeRate = exchangeRateService.save(baseCurrencyCode, targetCurrencyCode, rate);
+        sendJson(response, HttpServletResponse.SC_CREATED, exchangeRate);
     }
 }

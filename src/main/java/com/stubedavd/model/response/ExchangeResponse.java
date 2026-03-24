@@ -12,12 +12,18 @@ public class ExchangeResponse {
     private final BigDecimal amount;
     private final BigDecimal convertedAmount;
 
-    public ExchangeResponse(ExchangeRate exchangeRate, BigDecimal amount) {
-        this.baseCurrency = exchangeRate.getBaseCurrency();
-        this.targetCurrency = exchangeRate.getTargetCurrency();
-        this.rate = exchangeRate.getRate();
+    public ExchangeResponse(
+            Currency baseCurrency,
+            Currency targetCurrency,
+            BigDecimal rate,
+            BigDecimal amount,
+            BigDecimal convertedAmount
+    ) {
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
+        this.rate = rate;
         this.amount = amount;
-        this.convertedAmount = amount.multiply(rate);
+        this.convertedAmount = convertedAmount;
     }
 
     public Currency getBaseCurrency() {
