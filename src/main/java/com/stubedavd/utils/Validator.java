@@ -29,8 +29,9 @@ public class Validator {
         }
 
         try {
+            System.out.println(rate);
             new BigDecimal(rate);
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
             throw new ValidationException();
         }
     }

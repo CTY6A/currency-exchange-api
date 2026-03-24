@@ -16,8 +16,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @WebServlet("/exchangeRate/*")
@@ -43,7 +46,6 @@ public class ExchangeRateServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json; charset=UTF-8");
         if (req.getMethod().equals("PATCH")) {
             doPatch(req, resp);
         } else {
@@ -83,7 +85,8 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
 
-    private void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json; charset=UTF-8");
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.length() != TWO_CODES_AND_SLASH) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -94,7 +97,26 @@ public class ExchangeRateServlet extends HttpServlet {
             String exchangeRateCodes = pathInfo.substring(1);
             String baseCurrencyCode = exchangeRateCodes.substring(0, 3).toUpperCase();
             String targetCurrencyCode = exchangeRateCodes.substring(3).toUpperCase();
-            String rateString = req.getParameter("rate");
+
+            StringBuilder body = new StringBuilder();
+            String line;
+            try (BufferedReader reader = req.getReader()) {
+                while ((line = reader.readLine()) != null) {
+                    body.append(line);
+                }
+            }
+            String bodyStr = body.toString();
+
+            String rateString = null;
+            String[] pairs = bodyStr.split("&");
+            for (String pair : pairs) {
+                String[] kv = pair.split("=");
+                if (kv.length == 2 && "rate".equals(kv[0])) {
+                    rateString = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+                    break;
+                }
+            }
+
                 try {
                     Validator.validateExchangeRate(baseCurrencyCode, targetCurrencyCode, rateString);
                     baseCurrencyCode = baseCurrencyCode.toUpperCase();
