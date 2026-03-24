@@ -3,7 +3,7 @@ package com.stubedavd.model;
 import java.math.BigDecimal;
 
 public class ExchangeRate {
-    private int id;
+    private Integer id;
     private final Currency baseCurrency;
     private final Currency targetCurrency;
     private final BigDecimal rate;
@@ -14,7 +14,7 @@ public class ExchangeRate {
         this.rate = rate;
     }
 
-    public ExchangeRate(int id, Currency baseCurrency, Currency targetCurrency, BigDecimal rate) {
+    public ExchangeRate(Integer id, Currency baseCurrency, Currency targetCurrency, BigDecimal rate) {
         this.id = id;
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;

@@ -1,10 +1,10 @@
 package com.stubedavd.utils;
 
-import java.math.BigDecimal;
-
 import com.stubedavd.exception.ValidationException;
 
-public class Validator {
+import java.math.BigDecimal;
+
+public final class Validator {
 
     public static void validateCurrency(String name, String code, String sign) throws ValidationException {
 

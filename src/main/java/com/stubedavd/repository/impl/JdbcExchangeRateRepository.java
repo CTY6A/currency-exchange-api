@@ -1,10 +1,11 @@
-package com.stubedavd.repository;
+package com.stubedavd.repository.impl;
 
 import com.stubedavd.exception.AlreadyExistException;
 import com.stubedavd.exception.InfrastructureException;
-import com.stubedavd.utils.DataSource;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
+import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.utils.ConnectionProvider;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -16,11 +17,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class JdbcExchangeRateRepository implements ExchangeRateRepository {
-    private static final int INTEGRITY_CONSTRAINT_VIOLATION_CODE = 19;
-
-    private final DataSource dataSource = new DataSource();
 
     public List<ExchangeRate> findAll() throws InfrastructureException {
+
         final String query =
             """
                 SELECT ExchangeRates.ID AS "ExchangeRates.ID",
@@ -40,13 +39,15 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                     TargetCurrency on TargetCurrency.ID = ExchangeRates.TargetCurrencyId
             """;
 
-        try (Connection connection = dataSource.getConnection()){
+        try (Connection connection = ConnectionProvider.getConnection()){
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                     List<ExchangeRate> exchangeRates = new ArrayList<>();
                     while (resultSet.next()) {
                         exchangeRates.add(getExchangeRate(resultSet));
                     }
+
                     return exchangeRates;
                 }
             }
@@ -56,6 +57,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
     }
 
     public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws InfrastructureException {
+
         final String query =
             """
                 SELECT ExchangeRates.ID AS "ExchangeRates.ID",
@@ -75,8 +77,10 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                     TargetCurrency on TargetCurrency.ID = ExchangeRates.TargetCurrencyId
                 WHERE BaseCurrency.Code = ? AND TargetCurrency.Code = ?
             """;
-        try (Connection connection = dataSource.getConnection();){
+
+        try (Connection connection = ConnectionProvider.getConnection();){
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
                 preparedStatement.setString(1, baseCode);
                 preparedStatement.setString(2, targetCode);
 
@@ -84,6 +88,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                     if (resultSet.next()) {
                         return Optional.of(getExchangeRate(resultSet));
                     }
+
                     return Optional.empty();
                 }
             }
@@ -92,7 +97,10 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
         }
     }
 
+    private static final int INTEGRITY_CONSTRAINT_VIOLATION_CODE = 19;
+
     public ExchangeRate save(ExchangeRate exchangeRate) throws InfrastructureException, AlreadyExistException {
+
         final String SAVE =
             """
                 INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate)
@@ -100,8 +108,9 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 RETURNING ID
             """;
 
-        try (Connection connection = dataSource.getConnection();){
+        try (Connection connection = ConnectionProvider.getConnection();){
             try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE)) {
+
                 Currency baseCurrency = exchangeRate.getBaseCurrency();
                 Currency targetCurrency = exchangeRate.getTargetCurrency();
                 BigDecimal rate = exchangeRate.getRate();
@@ -117,16 +126,18 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
+
             if (e.getErrorCode() == INTEGRITY_CONSTRAINT_VIOLATION_CODE) {
                 throw new AlreadyExistException("Exchange rate already exists");
             }
+
             throw new InfrastructureException("Database is available");
         }
     }
 
     public ExchangeRate update(ExchangeRate exchangeRate) throws InfrastructureException {
 
-        String UPDATE =
+        final String UPDATE =
             """
                 UPDATE ExchangeRates
                 SET Rate = ?
@@ -135,8 +146,10 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                     TargetCurrencyId = ?
                 RETURNING ID;
             """;
-        try (Connection connection = dataSource.getConnection();){
+
+        try (Connection connection = ConnectionProvider.getConnection();){
             try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE)) {
+
                 Currency baseCurrency = exchangeRate.getBaseCurrency();
                 Currency targetCurrency = exchangeRate.getTargetCurrency();
                 BigDecimal rate = exchangeRate.getRate();
@@ -146,18 +159,20 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 preparedStatement.setInt(3, targetCurrency.getId());
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                     resultSet.next();
                     int id = resultSet.getInt("ID");
+
                     return new ExchangeRate(id, baseCurrency, targetCurrency, rate);
                 }
             }
         } catch (SQLException e) {
             throw new InfrastructureException("Database is available");
         }
-
     }
 
     private ExchangeRate getExchangeRate(ResultSet resultSet) throws SQLException {
+
         return new ExchangeRate(
                 resultSet.getInt("ExchangeRates.ID"),
                 new Currency(

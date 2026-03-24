@@ -1,10 +1,11 @@
-package com.stubedavd.service;
+package com.stubedavd.service.impl;
 
 import com.stubedavd.exception.NotFoundException;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
 import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.repository.ExchangeRateRepository;
+import com.stubedavd.service.ExchangeRateService;
 
 import java.math.BigDecimal;
 import java.util.List;
