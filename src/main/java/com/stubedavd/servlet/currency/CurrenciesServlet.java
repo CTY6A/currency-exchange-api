@@ -56,28 +56,10 @@ public class CurrenciesServlet extends HttpServlet {
         String name = req.getParameter("name");
         String code = req.getParameter("code");
         String sign = req.getParameter("sign");
-            try {
                 Validator.validateCurrency(name, code, sign);
                 Currency currency = new Currency(ZERO_ID, name, code.toUpperCase(), sign);
                 Currency resultCurrency = repository.save(currency);
                 resp.setStatus(HttpServletResponse.SC_CREATED);
                 mapper.writeValue(resp.getWriter(), resultCurrency);
-            } catch (InfrastructureException e) {
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                mapper.writeValue(resp.getWriter(), new ErrorResponse(
-                        "Database is unavailable"
-                ));
-            } catch (AlreadyExistException e) {
-                resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                mapper.writeValue(resp.getWriter(), new ErrorResponse(
-                        "Currency already exists"
-                ));
-            } catch (ValidationException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                mapper.writeValue(resp.getWriter(), new ErrorResponse(
-                        "Invalid parameters"
-                ));
-
-        }
     }
 }

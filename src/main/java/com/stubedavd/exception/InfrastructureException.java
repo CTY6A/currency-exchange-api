@@ -1,6 +1,6 @@
 package com.stubedavd.exception;
 
-public class InfrastructureException extends Exception {
+public class InfrastructureException extends RuntimeException {
     public InfrastructureException() {
         super();
     }
