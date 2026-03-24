@@ -51,7 +51,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
     }
 
@@ -88,7 +88,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
     }
 
@@ -118,9 +118,9 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == INTEGRITY_CONSTRAINT_VIOLATION_CODE) {
-                throw new AlreadyExistException(e);
+                throw new AlreadyExistException("Exchange rate already exists");
             }
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
     }
 
@@ -152,7 +152,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
 
     }

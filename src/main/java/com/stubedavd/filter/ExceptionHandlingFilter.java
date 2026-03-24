@@ -1,22 +1,25 @@
 package com.stubedavd.filter;
 
-import com.stubedavd.exception.AlreadyExistException;
-import com.stubedavd.exception.InfrastructureException;
-import com.stubedavd.exception.ValidationException;
-import com.stubedavd.model.response.ErrorResponse;
-import com.stubedavd.utils.ResponseHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+
+import com.stubedavd.model.response.ErrorResponse;
+import com.stubedavd.exception.AlreadyExistException;
+import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.exception.NotFoundException;
+import com.stubedavd.exception.ValidationException;
 
 @WebFilter("/*")
 public class ExceptionHandlingFilter implements Filter {
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
@@ -28,12 +31,16 @@ public class ExceptionHandlingFilter implements Filter {
             writeError(httpResponse, HttpServletResponse.SC_CONFLICT, e.getMessage());
         } catch (ValidationException e) {
             writeError(httpResponse, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        } catch (NotFoundException e) {
+            writeError(httpResponse, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         }
     }
 
-    private void writeError(HttpServletResponse response, int status, String message) {
+    private void writeError(HttpServletResponse response, int status, String message) throws IOException {
+
         response.setContentType("application/json; charset=UTF-8");
         response.setStatus(status);
-        new ResponseHelper(response, new ErrorResponse(message));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(response.getWriter(), new ErrorResponse(message));
     }
 }

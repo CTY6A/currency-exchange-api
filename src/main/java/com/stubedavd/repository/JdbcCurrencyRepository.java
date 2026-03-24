@@ -29,7 +29,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 }
             }
         }  catch (SQLException e) {
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
     }
 
@@ -47,7 +47,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
     }
 
@@ -72,9 +72,9 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == INTEGRITY_CONSTRAINT_VIOLATION_CODE) {
-                throw new AlreadyExistException(e);
+                throw new AlreadyExistException("Currency already exists");
             }
-            throw new InfrastructureException(e);
+            throw new InfrastructureException("Database is available");
         }
     }
 
