@@ -6,6 +6,13 @@ public class Currency {
     private final String code;
     private final String sign;
 
+    public Currency(String name, String code, String sign) {
+        this.id = -1;
+        this.name = name;
+        this.code = code;
+        this.sign = sign;
+    }
+
     public Currency(int id, String name, String code, String sign) {
         this.id = id;
         this.name = name;

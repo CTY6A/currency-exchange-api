@@ -24,8 +24,6 @@ import com.stubedavd.exception.NotFoundException;
 @WebServlet("/exchange")
 public class ExchangeServlet extends BaseServlet {
 
-    private static final int ZERO_ID = 1;
-
     private ExchangeRateRepository repository;
 
     @Override
@@ -69,7 +67,7 @@ public class ExchangeServlet extends BaseServlet {
 
             if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
 
-                exchangeRate = Optional.of(new ExchangeRate(ZERO_ID, baseCurrencyOptional.get(), targetCurrencyOptional.get(), amount));
+                exchangeRate = Optional.of(new ExchangeRate(baseCurrencyOptional.get(), targetCurrencyOptional.get(), amount));
                 ExchangeService exchangeService = new ExchangeService();
                 ExchangeRate resultExchangeRate = exchangeService.findExchangeRate(exchangeRate.orElse(null));
 

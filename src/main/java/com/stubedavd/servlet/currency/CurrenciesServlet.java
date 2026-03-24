@@ -17,8 +17,6 @@ import com.stubedavd.utils.Validator;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends BaseServlet {
 
-    private static final int ZERO_ID = 0;
-
     private CurrencyRepository repository;
 
     @Override
@@ -50,7 +48,7 @@ public class CurrenciesServlet extends BaseServlet {
 
         Validator.validateCurrency(name, code, sign);
 
-        Currency currency = new Currency(ZERO_ID, name, code.toUpperCase(), sign);
+        Currency currency = new Currency(name, code.toUpperCase(), sign);
         Currency resultCurrency = repository.save(currency);
 
         sendJson(response, HttpServletResponse.SC_CREATED, resultCurrency);
