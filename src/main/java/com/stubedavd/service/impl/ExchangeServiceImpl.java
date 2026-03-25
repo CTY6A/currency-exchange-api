@@ -1,7 +1,10 @@
 package com.stubedavd.service.impl;
 
+import com.stubedavd.dto.ExchangeRateDto;
+import com.stubedavd.dto.request.ExchangeRequestDto;
 import com.stubedavd.exception.NotFoundException;
-import com.stubedavd.model.response.ExchangeResponse;
+import com.stubedavd.dto.response.ExchangeResponseDto;
+import com.stubedavd.mapper.ExchangeMapper;
 import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.repository.ExchangeRateRepository;
 import com.stubedavd.model.Currency;
@@ -14,125 +17,98 @@ import java.util.Optional;
 
 public class ExchangeServiceImpl implements ExchangeService {
 
+    public static final String CROSS_CONVERT_CURRENCY = "USD";
+    public static final int RATE_SCALE = 6;
+    public static final int CONVERTED_AMOUNT_SCALE = 2;
     private final ExchangeRateRepository exchangeRateRepository;
     private final CurrencyRepository currencyRepository;
+    private final ExchangeMapper exchangeMapper;
 
     public ExchangeServiceImpl(
             ExchangeRateRepository exchangeRateRepository,
-            CurrencyRepository currencyRepository
+            CurrencyRepository currencyRepository,
+            ExchangeMapper exchangeMapper
     ) {
+
         this.exchangeRateRepository = exchangeRateRepository;
         this.currencyRepository = currencyRepository;
+        this.exchangeMapper = exchangeMapper;
     }
 
     @Override
-    public ExchangeResponse getExchangeResponse(
-            String baseCurrencyCode,
-            String targetCurrencyCode,
-            BigDecimal amount) {
+    public ExchangeResponseDto convertCurrency(ExchangeRequestDto exchangeRequestDto) {
 
-        Optional<ExchangeResponse> exchangeResponse =
-                convertDirect(baseCurrencyCode, targetCurrencyCode, amount);
+        String baseCurrencyCode = exchangeRequestDto.baseCurrencyCode();
+        String targetCurrencyCode = exchangeRequestDto.targetCurrencyCode();
 
-        if (exchangeResponse.isEmpty()) {
+        ExchangeRateDto exchangeRateDto = findDirectExchangeRate(baseCurrencyCode, targetCurrencyCode)
+                .or(() -> findReverseExchangeRate(baseCurrencyCode, targetCurrencyCode))
+                .or(() -> getCrossExchangeRate(baseCurrencyCode, targetCurrencyCode))
+                .orElseThrow(() -> new NotFoundException(
+                        "Exchange could not be found for codes " + baseCurrencyCode + ", " + targetCurrencyCode
+                ));
 
-            exchangeResponse = convertReverse(baseCurrencyCode, targetCurrencyCode, amount);
+        BigDecimal convertedAmount = exchangeRequestDto.amount()
+                .multiply(exchangeRateDto.rate())
+                .setScale(CONVERTED_AMOUNT_SCALE, RoundingMode.HALF_EVEN);
 
-            if (exchangeResponse.isEmpty()) {
-
-                exchangeResponse = convertViaUsd(baseCurrencyCode, targetCurrencyCode, amount);
-
-                if (exchangeResponse.isEmpty()) {
-                    throw new NotFoundException("Exchange could not be found");
-                }
-            }
-        }
-
-        return exchangeResponse.get();
+        return exchangeMapper.toResponseDto(
+                exchangeRateDto,
+                exchangeRequestDto.amount(),
+                convertedAmount
+        );
     }
 
-    private Optional<ExchangeResponse> convertDirect(
-            String baseCurrencyCode,
-            String targetCurrencyCode,
-            BigDecimal amount
-    ) {
+    private Optional<ExchangeRateDto> findDirectExchangeRate(String baseCurrencyCode, String targetCurrencyCode) {
 
-        Optional<ExchangeRate> exchangeRateOptional =
-                exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
-
-        if (exchangeRateOptional.isPresent()) {
-
-            ExchangeRate exchangeRate = exchangeRateOptional.get();
-            Currency baseCurrency = exchangeRate.getBaseCurrency();
-            Currency targetCurrency = exchangeRate.getTargetCurrency();
-            BigDecimal rate = exchangeRate.getRate();
-            BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_EVEN);
-
-            return Optional.of(new ExchangeResponse(baseCurrency, targetCurrency, rate, amount, convertedAmount));
-        }
-
-        return Optional.empty();
+        return exchangeRateRepository
+                .findByCodes(baseCurrencyCode, targetCurrencyCode)
+                .map(exchangeMapper::toExchangeRateDto);
     }
 
-    private Optional<ExchangeResponse> convertReverse(
-            String baseCurrencyCode,
-            String targetCurrencyCode,
-            BigDecimal amount
-    ) {
+    private Optional<ExchangeRateDto> findReverseExchangeRate(String baseCurrencyCode, String targetCurrencyCode) {
 
-        String tmpCurrencyCode = baseCurrencyCode;
-        baseCurrencyCode = targetCurrencyCode;
-        targetCurrencyCode = tmpCurrencyCode;
+        return exchangeRateRepository.findByCodes(targetCurrencyCode, baseCurrencyCode)
+                .map(exchangeRate -> {
 
-        Optional<ExchangeRate> exchangeRateOptional =
-                exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
+                    BigDecimal rate = exchangeRate.getRate();
+                    BigDecimal.ONE.divide(rate, RATE_SCALE, RoundingMode.HALF_UP);
 
-        if (exchangeRateOptional.isPresent()) {
-
-            ExchangeRate exchangeRate = exchangeRateOptional.get();
-            Currency baseCurrency = exchangeRate.getBaseCurrency();
-            Currency targetCurrency = exchangeRate.getTargetCurrency();
-            BigDecimal rate = exchangeRate.getRate();
-            rate = BigDecimal.ONE.divide(rate, 6, RoundingMode.HALF_UP);
-            BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_EVEN);
-
-            return Optional.of(new ExchangeResponse(baseCurrency, targetCurrency, rate, amount, convertedAmount));
-        }
-
-        return Optional.empty();
+                    return new ExchangeRateDto(
+                            exchangeRate.getBaseCurrency(),
+                            exchangeRate.getTargetCurrency(),
+                            rate);
+                });
     }
 
-    public static final String USD_CODE = "USD";
-
-    private Optional<ExchangeResponse> convertViaUsd(
-            String baseCurrencyCode,
-            String targetCurrencyCode,
-            BigDecimal amount
-    ) {
+    private Optional<ExchangeRateDto> getCrossExchangeRate(String baseCurrencyCode, String targetCurrencyCode) {
 
         Optional<ExchangeRate> exchangeRateUsdToBaseCurrency =
-                exchangeRateRepository.findByCodes(USD_CODE, baseCurrencyCode);
+                exchangeRateRepository.findByCodes(CROSS_CONVERT_CURRENCY, baseCurrencyCode);
         Optional<ExchangeRate> exchangeRateUsdToTargetCurrency =
-                exchangeRateRepository.findByCodes(USD_CODE, targetCurrencyCode);
+                exchangeRateRepository.findByCodes(CROSS_CONVERT_CURRENCY, targetCurrencyCode);
 
         if (exchangeRateUsdToBaseCurrency.isPresent() && exchangeRateUsdToTargetCurrency.isPresent()) {
 
             BigDecimal usdToBaseCurrency = exchangeRateUsdToBaseCurrency.get().getRate();
+
             BigDecimal baseCurrencyToUsd =
-                    BigDecimal.ONE.divide(usdToBaseCurrency, 6, RoundingMode.HALF_UP);
+                    BigDecimal.ONE.divide(usdToBaseCurrency, RATE_SCALE, RoundingMode.HALF_UP);
+
             BigDecimal usdToTargetCurrency = exchangeRateUsdToTargetCurrency.get().getRate();
+
             BigDecimal rate =
                     baseCurrencyToUsd.multiply(usdToTargetCurrency);
 
             Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
             Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
+
             if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
 
                 Currency baseCurrency = baseCurrencyOptional.get();
                 Currency targetCurrency = targetCurrencyOptional.get();
-                BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_EVEN);
 
-                return Optional.of(new ExchangeResponse(baseCurrency, targetCurrency, rate, amount, convertedAmount));
+                return Optional.of(new ExchangeRateDto(baseCurrency, targetCurrency, rate));
             }
         }
 

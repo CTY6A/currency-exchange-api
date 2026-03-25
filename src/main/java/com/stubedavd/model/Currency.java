@@ -1,16 +1,10 @@
 package com.stubedavd.model;
 
 public class Currency {
-    private Integer id;
+    private final Integer id;
     private final String name;
     private final String code;
     private final String sign;
-
-    public Currency(String name, String code, String sign) {
-        this.name = name;
-        this.code = code;
-        this.sign = sign;
-    }
 
     public Currency(Integer id, String name, String code, String sign) {
         this.id = id;

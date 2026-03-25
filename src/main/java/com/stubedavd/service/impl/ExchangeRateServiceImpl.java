@@ -1,65 +1,91 @@
 package com.stubedavd.service.impl;
 
+import com.stubedavd.dto.request.ExchangeRateRequestDto;
+import com.stubedavd.dto.response.ExchangeRateResponseDto;
 import com.stubedavd.exception.NotFoundException;
+import com.stubedavd.mapper.ExchangeRateMapper;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
 import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.repository.ExchangeRateRepository;
 import com.stubedavd.service.ExchangeRateService;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private final ExchangeRateRepository exchangeRateRepository;
     private final CurrencyRepository currencyRepository;
+    private final ExchangeRateMapper exchangeRateMapper;
 
     public ExchangeRateServiceImpl(
             ExchangeRateRepository exchangeRateRepository,
-            CurrencyRepository currencyRepository
+            CurrencyRepository currencyRepository,
+            ExchangeRateMapper exchangeRateMapper
     ) {
+
         this.exchangeRateRepository = exchangeRateRepository;
         this.currencyRepository = currencyRepository;
+        this.exchangeRateMapper = exchangeRateMapper;
     }
 
     @Override
-    public List<ExchangeRate> findAll() {
-        return exchangeRateRepository.findAll();
+    public List<ExchangeRateResponseDto> getAll() {
+
+        List<ExchangeRate> exchangeRates = exchangeRateRepository.findAll();
+
+        return exchangeRates.stream().map(exchangeRateMapper::toResponseDto).toList();
     }
 
     @Override
-    public Optional<ExchangeRate> findByCodes(String baseCurrencyCode, String targetCurrencyCode) {
-        return exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
+    public ExchangeRateResponseDto findByCodes(String baseCurrencyCode, String targetCurrencyCode) {
+        ExchangeRate exchangeRate = exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode)
+                .orElseThrow(() -> new NotFoundException(
+                        "No exchange rate found for code " + baseCurrencyCode + " and target " + targetCurrencyCode
+                ));
+
+        return exchangeRateMapper.toResponseDto(exchangeRate);
     }
 
     @Override
-    public ExchangeRate save(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) {
 
-        Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
-        Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
+        Currency baseCurrency = currencyRepository.findByCode(exchangeRateRequestDto.baseCurrencyCode())
+                .orElseThrow(() -> new NotFoundException(
+                        "No exchange rate found for code " + exchangeRateRequestDto.baseCurrencyCode()
+                ));
+        Currency targetCurrency = currencyRepository.findByCode(exchangeRateRequestDto.targetCurrencyCode())
+                .orElseThrow(() -> new NotFoundException(
+                        "No exchange rate found for code " + exchangeRateRequestDto.targetCurrencyCode()
+                ));
 
-        if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
+        ExchangeRate exchangeRate =
+                exchangeRateMapper.toModel(baseCurrency, targetCurrency, exchangeRateRequestDto.rate());
 
-            ExchangeRate exchangeRate =
-                    new ExchangeRate(baseCurrencyOptional.get(), targetCurrencyOptional.get(), rate);
-            return exchangeRateRepository.save(exchangeRate);
-        } else {
-            throw new NotFoundException("Currency could not be found");
-        }
+        exchangeRate = exchangeRateRepository.save(exchangeRate);
+
+        return exchangeRateMapper.toResponseDto(exchangeRate);
     }
 
     @Override
-    public ExchangeRate update(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+    public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) {
 
-        Optional<ExchangeRate> exchangeRate =
-                exchangeRateRepository.findByCodes(baseCurrencyCode, targetCurrencyCode);
+        ExchangeRate exchangeRate =
+                exchangeRateRepository.findByCodes(
+                            exchangeRateRequestDto.baseCurrencyCode(),
+                            exchangeRateRequestDto.targetCurrencyCode()
+                        )
+                .orElseThrow(() -> new NotFoundException("Exchange rate could not be found"));
 
-        if (exchangeRate.isPresent()) {
-            return exchangeRateRepository.update(exchangeRate.get());
-        } else {
-            throw new NotFoundException("Exchange rate could not be found");
-        }
+        exchangeRate = new ExchangeRate(
+                exchangeRate.getId(),
+                exchangeRate.getBaseCurrency(),
+                exchangeRate.getTargetCurrency(),
+                exchangeRateRequestDto.rate()
+        );
+
+        exchangeRate = exchangeRateRepository.update(exchangeRate);
+
+        return exchangeRateMapper.toResponseDto(exchangeRate);
     }
 }

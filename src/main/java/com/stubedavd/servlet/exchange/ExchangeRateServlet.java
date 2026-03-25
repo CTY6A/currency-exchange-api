@@ -1,34 +1,44 @@
 package com.stubedavd.servlet.exchange;
 
+import com.stubedavd.dto.request.ExchangeRateRequestDto;
+import com.stubedavd.dto.response.ExchangeRateResponseDto;
+import com.stubedavd.exception.NotFoundException;
+import com.stubedavd.listener.ContextListener;
+import com.stubedavd.mapper.ExchangeRateMapper;
 import com.stubedavd.service.ExchangeRateService;
+import com.stubedavd.servlet.BaseServlet;
+import com.stubedavd.utils.Validator;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.math.BigDecimal;
-import java.util.Optional;
 import java.io.IOException;
-
-import com.stubedavd.model.ExchangeRate;
-import com.stubedavd.servlet.BaseServlet;
-import com.stubedavd.utils.Validator;
-import com.stubedavd.exception.NotFoundException;
+import java.math.BigDecimal;
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends BaseServlet {
 
     private ExchangeRateService exchangeRateService;
+    private ExchangeRateMapper exchangeRateMapper;
 
     @Override
     public void init() throws ServletException {
+
         super.init();
 
         exchangeRateService =
-                (ExchangeRateService) getServletContext().getAttribute("exchangeRateService");
+                (ExchangeRateService) getServletContext().getAttribute(ContextListener.EXCHANGE_RATE_SERVICE);
 
         if (exchangeRateService == null) {
             throw new NotFoundException("No exchange rate service found");
+        }
+
+        this.exchangeRateMapper =
+                (ExchangeRateMapper) getServletContext().getAttribute(ContextListener.EXCHANGE_RATE_MAPPER);
+
+        if (exchangeRateMapper == null) {
+            throw new NotFoundException("Exchange rate mapper not found");
         }
     }
 
@@ -54,13 +64,10 @@ public class ExchangeRateServlet extends BaseServlet {
         String baseCurrencyCode = exchangeRateCodes.substring(0, 3).toUpperCase();
         String targetCurrencyCode = exchangeRateCodes.substring(3).toUpperCase();
 
-        Optional<ExchangeRate> exchangeRate = exchangeRateService.findByCodes(baseCurrencyCode, targetCurrencyCode);
+        ExchangeRateResponseDto exchangeRateResponseDto =
+                exchangeRateService.findByCodes(baseCurrencyCode, targetCurrencyCode);
 
-        if (exchangeRate.isPresent()) {
-            sendJson(response, HttpServletResponse.SC_OK, exchangeRate.get());
-        } else {
-            throw new NotFoundException("No exchange rate found for " + baseCurrencyCode + " " + targetCurrencyCode);
-        }
+        sendJson(response, HttpServletResponse.SC_OK, exchangeRateResponseDto);
     }
 
     private void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -72,6 +79,7 @@ public class ExchangeRateServlet extends BaseServlet {
         String exchangeRateCodes = pathInfo.substring(1);
         String baseCurrencyCode = exchangeRateCodes.substring(0, 3).toUpperCase();
         String targetCurrencyCode = exchangeRateCodes.substring(3).toUpperCase();
+
         String rateParameter = request.getReader().readLine();
 
         Validator.validateRateParameter(rateParameter);
@@ -84,8 +92,11 @@ public class ExchangeRateServlet extends BaseServlet {
         targetCurrencyCode = targetCurrencyCode.toUpperCase();
         BigDecimal rate = new BigDecimal(rateString);
 
-        ExchangeRate exchangeRate = exchangeRateService.update(baseCurrencyCode, targetCurrencyCode, rate);
+        ExchangeRateRequestDto exchangeRateRequestDto =
+                exchangeRateMapper.toRequestDto(baseCurrencyCode, targetCurrencyCode, rate);
 
-        sendJson(response, HttpServletResponse.SC_OK, exchangeRate);
+        ExchangeRateResponseDto exchangeRateResponseDto = exchangeRateService.update(exchangeRateRequestDto);
+
+        sendJson(response, HttpServletResponse.SC_OK, exchangeRateResponseDto);
     }
 }

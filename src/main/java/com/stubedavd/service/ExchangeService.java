@@ -1,10 +1,9 @@
 package com.stubedavd.service;
 
-import com.stubedavd.model.response.ExchangeResponse;
-
-import java.math.BigDecimal;
+import com.stubedavd.dto.request.ExchangeRequestDto;
+import com.stubedavd.dto.response.ExchangeResponseDto;
 
 public interface ExchangeService {
 
-    ExchangeResponse getExchangeResponse(String currencyCodeFrom, String currencyCodeTo, BigDecimal amount);
+    ExchangeResponseDto convertCurrency(ExchangeRequestDto exchangeRequestDto);
 }

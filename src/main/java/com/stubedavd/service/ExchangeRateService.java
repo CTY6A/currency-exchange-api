@@ -1,18 +1,17 @@
 package com.stubedavd.service;
 
-import com.stubedavd.model.ExchangeRate;
+import com.stubedavd.dto.request.ExchangeRateRequestDto;
+import com.stubedavd.dto.response.ExchangeRateResponseDto;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 public interface ExchangeRateService {
 
-    List<ExchangeRate> findAll();
+    List<ExchangeRateResponseDto> getAll();
 
-    Optional<ExchangeRate> findByCodes(String baseCurrencyCode, String targetCurrencyCode);
+    ExchangeRateResponseDto findByCodes(String baseCurrencyCode, String targetCurrencyCode);
 
-    ExchangeRate save(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate);
+    ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto);
 
-    ExchangeRate update(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate);
+    ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto);
 }

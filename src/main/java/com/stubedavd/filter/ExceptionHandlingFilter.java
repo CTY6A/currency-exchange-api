@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import com.stubedavd.model.response.ErrorResponse;
+import com.stubedavd.dto.response.ErrorResponseDto;
 import com.stubedavd.exception.AlreadyExistException;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.exception.NotFoundException;
@@ -41,6 +41,6 @@ public class ExceptionHandlingFilter implements Filter {
         response.setContentType("application/json; charset=UTF-8");
         response.setStatus(status);
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(response.getWriter(), new ErrorResponse(message));
+        objectMapper.writeValue(response.getWriter(), new ErrorResponseDto(message));
     }
 }

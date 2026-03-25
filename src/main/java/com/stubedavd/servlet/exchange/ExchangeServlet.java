@@ -1,23 +1,26 @@
 package com.stubedavd.servlet.exchange;
 
+import com.stubedavd.dto.request.ExchangeRequestDto;
+import com.stubedavd.dto.response.ExchangeResponseDto;
+import com.stubedavd.exception.NotFoundException;
+import com.stubedavd.listener.ContextListener;
+import com.stubedavd.mapper.ExchangeMapper;
 import com.stubedavd.service.ExchangeService;
+import com.stubedavd.servlet.BaseServlet;
+import com.stubedavd.utils.Validator;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.math.BigDecimal;
 import java.io.IOException;
-
-import com.stubedavd.servlet.BaseServlet;
-import com.stubedavd.utils.Validator;
-import com.stubedavd.model.response.ExchangeResponse;
-import com.stubedavd.exception.NotFoundException;
+import java.math.BigDecimal;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends BaseServlet {
 
     private ExchangeService exchangeService;
+    private ExchangeMapper exchangeMapper;
 
     @Override
     public void init() throws ServletException {
@@ -25,10 +28,17 @@ public class ExchangeServlet extends BaseServlet {
         super.init();
 
         exchangeService =
-                (ExchangeService) getServletContext().getAttribute("exchangeService");
+                (ExchangeService) getServletContext().getAttribute(ContextListener.EXCHANGE_SERVICE);
 
         if (exchangeService == null) {
             throw new NotFoundException("No exchange service found");
+        }
+
+        exchangeMapper =
+                (ExchangeMapper) getServletContext().getAttribute(ContextListener.EXCHANGE_MAPPER);
+
+        if (exchangeMapper == null) {
+            throw new NotFoundException("No exchange mapper found");
         }
     }
 
@@ -45,9 +55,12 @@ public class ExchangeServlet extends BaseServlet {
         targetCurrencyCode = targetCurrencyCode.toUpperCase();
         BigDecimal amount = new BigDecimal(amountString);
 
-        ExchangeResponse exchangeResponse =
-                exchangeService.getExchangeResponse(baseCurrencyCode, targetCurrencyCode, amount);
+        ExchangeRequestDto exchangeRequestDto =
+                exchangeMapper.toRequestDto(baseCurrencyCode, targetCurrencyCode, amount);
 
-        sendJson(response, HttpServletResponse.SC_OK, exchangeResponse);
+        ExchangeResponseDto exchangeResponseDto =
+                exchangeService.convertCurrency(exchangeRequestDto);
+
+        sendJson(response, HttpServletResponse.SC_OK, exchangeResponseDto);
     }
 }

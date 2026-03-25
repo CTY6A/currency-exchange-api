@@ -1,33 +1,42 @@
 package com.stubedavd.servlet.currency;
 
+import com.stubedavd.dto.response.CurrencyResponseDto;
+import com.stubedavd.exception.NotFoundException;
+import com.stubedavd.listener.ContextListener;
+import com.stubedavd.mapper.CurrencyMapper;
+import com.stubedavd.model.Currency;
+import com.stubedavd.repository.CurrencyRepository;
+import com.stubedavd.servlet.BaseServlet;
+import com.stubedavd.utils.Validator;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.Optional;
-
-import com.stubedavd.servlet.BaseServlet;
-import com.stubedavd.repository.CurrencyRepository;
-import com.stubedavd.utils.Validator;
-import com.stubedavd.model.Currency;
-import com.stubedavd.exception.NotFoundException;
 
 @WebServlet("/currency/*")
 public class CurrencyServlet extends BaseServlet {
 
-    private CurrencyRepository repository;
+    private CurrencyRepository currencyRepository;
+    private CurrencyMapper currencyMapper;
 
     @Override
     public void init() throws ServletException {
         super.init();
 
-        repository =
-                (CurrencyRepository) getServletContext().getAttribute("currencyRepository");
+        currencyRepository =
+                (CurrencyRepository) getServletContext().getAttribute(ContextListener.CURRENCY_REPOSITORY);
 
-        if (repository == null) {
+        if (currencyRepository == null) {
             throw new NotFoundException("Currency repository not found");
+        }
+
+        this.currencyMapper =
+                (CurrencyMapper) getServletContext().getAttribute(ContextListener.CURRENCY_MAPPER);
+
+        if (currencyMapper == null) {
+            throw new NotFoundException("Currency mapper not found");
         }
     }
 
@@ -39,12 +48,12 @@ public class CurrencyServlet extends BaseServlet {
         Validator.validateOneCodePath(pathInfo);
 
         String code = pathInfo.substring(1);
-        Optional<Currency> currencyOptional = repository.findByCode(code);
 
-        if (currencyOptional.isPresent()) {
-            sendJson(response, HttpServletResponse.SC_OK, currencyOptional.get());
-        } else {
-            throw new NotFoundException("Currency not found");
-        }
+        Currency currency = currencyRepository.findByCode(code)
+                .orElseThrow(() -> new NotFoundException("Currency not found by code: " + code));
+
+        CurrencyResponseDto currencyResponseDto = currencyMapper.toResponseDto(currency);
+
+        sendJson(response, HttpServletResponse.SC_OK, currencyResponseDto);
     }
 }
