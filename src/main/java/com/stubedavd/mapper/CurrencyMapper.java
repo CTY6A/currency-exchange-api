@@ -1,11 +1,12 @@
 package com.stubedavd.mapper;
 
-import com.stubedavd.dto.request.CurrencyRequestDto;
-import com.stubedavd.dto.response.CurrencyResponseDto;
-import com.stubedavd.model.Currency;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+
+import com.stubedavd.dto.request.CurrencyRequestDto;
+import com.stubedavd.dto.response.CurrencyResponseDto;
+import com.stubedavd.model.Currency;
 
 @Mapper
 public interface CurrencyMapper {

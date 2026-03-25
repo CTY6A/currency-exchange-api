@@ -54,6 +54,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 .orElseThrow(() -> new NotFoundException(
                         "No exchange rate found for code " + exchangeRateRequestDto.baseCurrencyCode()
                 ));
+
         Currency targetCurrency = currencyRepository.findByCode(exchangeRateRequestDto.targetCurrencyCode())
                 .orElseThrow(() -> new NotFoundException(
                         "No exchange rate found for code " + exchangeRateRequestDto.targetCurrencyCode()

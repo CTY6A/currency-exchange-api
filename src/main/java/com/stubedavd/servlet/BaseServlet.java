@@ -9,12 +9,12 @@ import java.io.IOException;
 
 public class BaseServlet extends HttpServlet {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     protected void sendJson(HttpServletResponse response, int status, Object object) throws IOException {
 
         response.setContentType("application/json; charset=UTF-8");
         response.setStatus(status);
+
+        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(response.getWriter(), object);
     }
 }

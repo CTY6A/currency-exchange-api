@@ -20,6 +20,7 @@ public class ExchangeServiceImpl implements ExchangeService {
     public static final String CROSS_CONVERT_CURRENCY = "USD";
     public static final int RATE_SCALE = 6;
     public static final int CONVERTED_AMOUNT_SCALE = 2;
+
     private final ExchangeRateRepository exchangeRateRepository;
     private final CurrencyRepository currencyRepository;
     private final ExchangeMapper exchangeMapper;
@@ -85,6 +86,7 @@ public class ExchangeServiceImpl implements ExchangeService {
 
         Optional<ExchangeRate> exchangeRateUsdToBaseCurrency =
                 exchangeRateRepository.findByCodes(CROSS_CONVERT_CURRENCY, baseCurrencyCode);
+
         Optional<ExchangeRate> exchangeRateUsdToTargetCurrency =
                 exchangeRateRepository.findByCodes(CROSS_CONVERT_CURRENCY, targetCurrencyCode);
 
@@ -92,15 +94,16 @@ public class ExchangeServiceImpl implements ExchangeService {
 
             BigDecimal usdToBaseCurrency = exchangeRateUsdToBaseCurrency.get().getRate();
 
+            BigDecimal usdToTargetCurrency = exchangeRateUsdToTargetCurrency.get().getRate();
+
             BigDecimal baseCurrencyToUsd =
                     BigDecimal.ONE.divide(usdToBaseCurrency, RATE_SCALE, RoundingMode.HALF_UP);
-
-            BigDecimal usdToTargetCurrency = exchangeRateUsdToTargetCurrency.get().getRate();
 
             BigDecimal rate =
                     baseCurrencyToUsd.multiply(usdToTargetCurrency);
 
             Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
+
             Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
 
             if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {

@@ -40,10 +40,13 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
             """;
 
         try (Connection connection = ConnectionProvider.getConnection()){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                     List<ExchangeRate> exchangeRates = new ArrayList<>();
+
                     while (resultSet.next()) {
                         exchangeRates.add(getExchangeRate(resultSet));
                     }
@@ -79,12 +82,14 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
             """;
 
         try (Connection connection = ConnectionProvider.getConnection();){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
                 preparedStatement.setString(1, baseCode);
                 preparedStatement.setString(2, targetCode);
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                     if (resultSet.next()) {
                         return Optional.of(getExchangeRate(resultSet));
                     }
@@ -109,6 +114,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
             """;
 
         try (Connection connection = ConnectionProvider.getConnection();){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE)) {
 
                 Currency baseCurrency = exchangeRate.getBaseCurrency();
@@ -120,8 +126,11 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 preparedStatement.setBigDecimal(3, rate);
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                     resultSet.next();
+
                     int id = resultSet.getInt("ID");
+
                     return new ExchangeRate(id, baseCurrency, targetCurrency, rate);
                 }
             }
@@ -148,6 +157,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
             """;
 
         try (Connection connection = ConnectionProvider.getConnection();){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE)) {
 
                 Currency baseCurrency = exchangeRate.getBaseCurrency();
@@ -161,6 +171,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                     resultSet.next();
+
                     int id = resultSet.getInt("ID");
 
                     return new ExchangeRate(id, baseCurrency, targetCurrency, rate);

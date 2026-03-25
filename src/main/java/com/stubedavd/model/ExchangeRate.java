@@ -3,12 +3,14 @@ package com.stubedavd.model;
 import java.math.BigDecimal;
 
 public class ExchangeRate {
+
     private final Integer id;
     private final Currency baseCurrency;
     private final Currency targetCurrency;
     private final BigDecimal rate;
 
     public ExchangeRate(Integer id, Currency baseCurrency, Currency targetCurrency, BigDecimal rate) {
+
         this.id = id;
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;
@@ -33,6 +35,7 @@ public class ExchangeRate {
 
     @Override
     public String toString() {
+
         return "ExchangeRate{" +
                 "id=" + id +
                 ", baseCurrency=" + baseCurrency +

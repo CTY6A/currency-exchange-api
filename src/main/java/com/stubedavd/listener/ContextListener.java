@@ -1,5 +1,10 @@
 package com.stubedavd.listener;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.WebListener;
+
 import com.stubedavd.mapper.CurrencyMapper;
 import com.stubedavd.mapper.ExchangeMapper;
 import com.stubedavd.mapper.ExchangeRateMapper;
@@ -12,10 +17,6 @@ import com.stubedavd.service.ExchangeService;
 import com.stubedavd.service.impl.ExchangeRateServiceImpl;
 import com.stubedavd.service.impl.ExchangeServiceImpl;
 import com.stubedavd.utils.ConnectionProvider;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
 
 @WebListener
 public class ContextListener implements ServletContextListener {
@@ -30,6 +31,7 @@ public class ContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+
         ConnectionProvider.init();
 
         ServletContext servletContext = sce.getServletContext();

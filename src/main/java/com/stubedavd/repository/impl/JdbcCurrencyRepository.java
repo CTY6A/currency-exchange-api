@@ -18,10 +18,13 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
         final String query = "SELECT * FROM Currencies";
 
         try (Connection connection = ConnectionProvider.getConnection()){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                     List<Currency> currencies = new ArrayList<>();
+
                     while (resultSet.next()) {
                         currencies.add(getCurrency(resultSet));
                     }
@@ -39,9 +42,11 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
         final String query = "SELECT * FROM Currencies WHERE Code = ?";
 
         try (Connection connection = ConnectionProvider.getConnection()){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
                 preparedStatement.setString(1, code);
+
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                     if (resultSet.next()) {
@@ -63,6 +68,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
         final String query = "INSERT INTO Currencies(Code, FullName, Sign) VALUES (?,?,?) RETURNING ID";
 
         try (Connection connection = ConnectionProvider.getConnection()){
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
                 String code = currency.getCode();
