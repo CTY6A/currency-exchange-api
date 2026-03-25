@@ -73,7 +73,7 @@ public class ExchangeServiceImpl implements ExchangeService {
                 .map(exchangeRate -> {
 
                     BigDecimal rate = exchangeRate.getRate();
-                    BigDecimal.ONE.divide(rate, RATE_SCALE, RoundingMode.HALF_UP);
+                    rate = BigDecimal.ONE.divide(rate, RATE_SCALE, RoundingMode.HALF_UP);
 
                     return new ExchangeRateDto(
                             exchangeRate.getBaseCurrency(),

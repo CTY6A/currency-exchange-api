@@ -81,7 +81,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 WHERE BaseCurrency.Code = ? AND TargetCurrency.Code = ?
             """;
 
-        try (Connection connection = ConnectionProvider.getConnection();){
+        try (Connection connection = ConnectionProvider.getConnection()){
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -113,7 +113,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 RETURNING ID
             """;
 
-        try (Connection connection = ConnectionProvider.getConnection();){
+        try (Connection connection = ConnectionProvider.getConnection()){
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE)) {
 
@@ -156,7 +156,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 RETURNING ID;
             """;
 
-        try (Connection connection = ConnectionProvider.getConnection();){
+        try (Connection connection = ConnectionProvider.getConnection()){
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE)) {
 

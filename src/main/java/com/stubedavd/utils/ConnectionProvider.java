@@ -4,7 +4,6 @@ import com.stubedavd.exception.InfrastructureException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import javax.sql.DataSource;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -74,15 +73,6 @@ public final class ConnectionProvider {
         }
 
         return dataSource.getConnection();
-    }
-
-    public static DataSource getDataSource() {
-
-        if (dataSource == null) {
-            init();
-        }
-
-        return dataSource;
     }
 
     public static void close() {
