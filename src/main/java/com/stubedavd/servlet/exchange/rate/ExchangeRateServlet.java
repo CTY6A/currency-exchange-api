@@ -3,7 +3,7 @@ package com.stubedavd.servlet.exchange.rate;
 import com.stubedavd.dto.request.ExchangeRateRequestDto;
 import com.stubedavd.dto.response.ExchangeRateResponseDto;
 import com.stubedavd.servlet.exchange.ExchangeRateBaseServlet;
-import com.stubedavd.utils.Validator;
+import com.stubedavd.util.Validator;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;

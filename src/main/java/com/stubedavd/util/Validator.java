@@ -1,4 +1,4 @@
-package com.stubedavd.utils;
+package com.stubedavd.util;
 
 import com.stubedavd.exception.ValidationException;
 

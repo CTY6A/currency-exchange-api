@@ -8,7 +8,7 @@ import com.stubedavd.mapper.CurrencyMapper;
 import com.stubedavd.model.Currency;
 import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.servlet.BaseServlet;
-import com.stubedavd.utils.Validator;
+import com.stubedavd.util.Validator;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;

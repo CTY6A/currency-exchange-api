@@ -7,7 +7,7 @@ import com.stubedavd.listener.ContextListener;
 import com.stubedavd.mapper.ExchangeMapper;
 import com.stubedavd.service.ExchangeService;
 import com.stubedavd.servlet.BaseServlet;
-import com.stubedavd.utils.Validator;
+import com.stubedavd.util.Validator;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;

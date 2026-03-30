@@ -5,7 +5,7 @@ import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
 import com.stubedavd.repository.ExchangeRateRepository;
-import com.stubedavd.utils.ConnectionProvider;
+import com.stubedavd.util.ConnectionProvider;
 
 import java.math.BigDecimal;
 import java.sql.Connection;

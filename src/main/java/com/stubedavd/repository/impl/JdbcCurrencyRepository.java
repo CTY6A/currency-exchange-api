@@ -3,7 +3,7 @@ package com.stubedavd.repository.impl;
 import com.stubedavd.exception.AlreadyExistException;
 import com.stubedavd.exception.InfrastructureException;
 import com.stubedavd.repository.CurrencyRepository;
-import com.stubedavd.utils.ConnectionProvider;
+import com.stubedavd.util.ConnectionProvider;
 import com.stubedavd.model.Currency;
 
 import java.sql.*;

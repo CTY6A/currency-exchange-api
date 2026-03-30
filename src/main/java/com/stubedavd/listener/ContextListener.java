@@ -16,7 +16,7 @@ import com.stubedavd.service.ExchangeRateService;
 import com.stubedavd.service.ExchangeService;
 import com.stubedavd.service.impl.ExchangeRateServiceImpl;
 import com.stubedavd.service.impl.ExchangeServiceImpl;
-import com.stubedavd.utils.ConnectionProvider;
+import com.stubedavd.util.ConnectionProvider;
 
 @WebListener
 public class ContextListener implements ServletContextListener {
