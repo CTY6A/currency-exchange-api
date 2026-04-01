@@ -12,7 +12,7 @@ public final class Validator {
             throw new ValidationException("Name is invalid");
         }
 
-        if (code == null || !code.matches("[A-z]{3}")) {
+        if (code == null || !code.matches("[A-Za-z]{3}")) {
             throw new ValidationException("Code is invalid");
         }
 
@@ -23,11 +23,11 @@ public final class Validator {
 
     public static void validateExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) throws ValidationException {
 
-        if (baseCurrencyCode == null || !baseCurrencyCode.matches("[A-z]{3}")) {
+        if (baseCurrencyCode == null || !baseCurrencyCode.matches("[A-Za-z]{3}")) {
             throw new ValidationException("Base currency code is invalid");
         }
 
-        if (targetCurrencyCode == null || !targetCurrencyCode.matches("[A-z]{3}")) {
+        if (targetCurrencyCode == null || !targetCurrencyCode.matches("[A-Za-z]{3}")) {
             throw new ValidationException("Target currency code is invalid");
         }
 
