@@ -79,9 +79,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 .orElseThrow(() -> new NotFoundException("Exchange rate could not be found"));
 
         exchangeRate = new ExchangeRate(
-                exchangeRate.getId(),
-                exchangeRate.getBaseCurrency(),
-                exchangeRate.getTargetCurrency(),
+                exchangeRate.id(),
+                exchangeRate.baseCurrency(),
+                exchangeRate.targetCurrency(),
                 exchangeRateRequestDto.rate()
         );
 

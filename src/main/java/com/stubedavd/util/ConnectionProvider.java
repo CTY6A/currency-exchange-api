@@ -4,7 +4,6 @@ import com.stubedavd.exception.DatabaseException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +61,8 @@ public final class ConnectionProvider {
 
         Properties properties = new Properties();
 
-        try (InputStream inputStream = new FileInputStream(DATABASE_PROPERTIES_PATH)) {
+        try (InputStream inputStream =
+                     ConnectionProvider.class.getResourceAsStream("/" + DATABASE_PROPERTIES_PATH)) {
 
             properties.load(inputStream);
 

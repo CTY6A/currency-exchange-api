@@ -113,12 +113,12 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE_QUERY)) {
 
-                Currency baseCurrency = exchangeRate.getBaseCurrency();
-                Currency targetCurrency = exchangeRate.getTargetCurrency();
-                BigDecimal rate = exchangeRate.getRate();
+                Currency baseCurrency = exchangeRate.baseCurrency();
+                Currency targetCurrency = exchangeRate.targetCurrency();
+                BigDecimal rate = exchangeRate.rate();
 
-                preparedStatement.setInt(1, baseCurrency.getId());
-                preparedStatement.setInt(2, targetCurrency.getId());
+                preparedStatement.setInt(1, baseCurrency.id());
+                preparedStatement.setInt(2, targetCurrency.id());
                 preparedStatement.setBigDecimal(3, rate);
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -146,13 +146,13 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_QUERY)) {
 
-                Currency baseCurrency = exchangeRate.getBaseCurrency();
-                Currency targetCurrency = exchangeRate.getTargetCurrency();
-                BigDecimal rate = exchangeRate.getRate();
+                Currency baseCurrency = exchangeRate.baseCurrency();
+                Currency targetCurrency = exchangeRate.targetCurrency();
+                BigDecimal rate = exchangeRate.rate();
 
                 preparedStatement.setBigDecimal(1, rate);
-                preparedStatement.setInt(2, baseCurrency.getId());
-                preparedStatement.setInt(3, targetCurrency.getId());
+                preparedStatement.setInt(2, baseCurrency.id());
+                preparedStatement.setInt(3, targetCurrency.id());
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 

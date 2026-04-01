@@ -72,12 +72,12 @@ public class ExchangeServiceImpl implements ExchangeService {
         return exchangeRateRepository.findByCodes(targetCurrencyCode, baseCurrencyCode)
                 .map(exchangeRate -> {
 
-                    BigDecimal rate = exchangeRate.getRate();
+                    BigDecimal rate = exchangeRate.rate();
                     rate = BigDecimal.ONE.divide(rate, RATE_SCALE, RoundingMode.HALF_UP);
 
                     return new ExchangeRateDto(
-                            exchangeRate.getBaseCurrency(),
-                            exchangeRate.getTargetCurrency(),
+                            exchangeRate.targetCurrency(),
+                            exchangeRate.baseCurrency(),
                             rate);
                 });
     }
@@ -92,9 +92,9 @@ public class ExchangeServiceImpl implements ExchangeService {
 
         if (exchangeRateUsdToBaseCurrency.isPresent() && exchangeRateUsdToTargetCurrency.isPresent()) {
 
-            BigDecimal usdToBaseCurrency = exchangeRateUsdToBaseCurrency.get().getRate();
+            BigDecimal usdToBaseCurrency = exchangeRateUsdToBaseCurrency.get().rate();
 
-            BigDecimal usdToTargetCurrency = exchangeRateUsdToTargetCurrency.get().getRate();
+            BigDecimal usdToTargetCurrency = exchangeRateUsdToTargetCurrency.get().rate();
 
             BigDecimal baseCurrencyToUsd =
                     BigDecimal.ONE.divide(usdToBaseCurrency, RATE_SCALE, RoundingMode.HALF_UP);
@@ -102,17 +102,10 @@ public class ExchangeServiceImpl implements ExchangeService {
             BigDecimal rate =
                     baseCurrencyToUsd.multiply(usdToTargetCurrency);
 
-            Optional<Currency> baseCurrencyOptional = currencyRepository.findByCode(baseCurrencyCode);
+            Currency baseCurrency = exchangeRateUsdToBaseCurrency.get().targetCurrency();
+            Currency targetCurrency = exchangeRateUsdToTargetCurrency.get().targetCurrency();
 
-            Optional<Currency> targetCurrencyOptional = currencyRepository.findByCode(targetCurrencyCode);
-
-            if (baseCurrencyOptional.isPresent() && targetCurrencyOptional.isPresent()) {
-
-                Currency baseCurrency = baseCurrencyOptional.get();
-                Currency targetCurrency = targetCurrencyOptional.get();
-
-                return Optional.of(new ExchangeRateDto(baseCurrency, targetCurrency, rate));
-            }
+            return Optional.of(new ExchangeRateDto(baseCurrency, targetCurrency, rate));
         }
 
         return Optional.empty();

@@ -70,9 +70,9 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE_QUERY)) {
 
-                String code = currency.getCode();
-                String name = currency.getName();
-                String sign = currency.getSign();
+                String code = currency.code();
+                String name = currency.name();
+                String sign = currency.sign();
 
                 preparedStatement.setString(1, code);
                 preparedStatement.setString(2, name);
