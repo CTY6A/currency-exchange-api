@@ -1,6 +1,6 @@
 package com.stubedavd.util;
 
-import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.exception.DatabaseException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -42,7 +42,7 @@ public final class ConnectionProvider {
 
             dataSource = new HikariDataSource(config);
         } catch (ClassNotFoundException | FileNotFoundException | URISyntaxException e) {
-            throw new InfrastructureException("Database could not be initialized");
+            throw new DatabaseException("Database could not be initialized");
         }
     }
 

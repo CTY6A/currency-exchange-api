@@ -1,7 +1,7 @@
 package com.stubedavd.repository.impl;
 
 import com.stubedavd.exception.AlreadyExistException;
-import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.exception.DatabaseException;
 import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.util.ConnectionProvider;
 import com.stubedavd.model.Currency;
@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class JdbcCurrencyRepository implements CurrencyRepository {
 
-    public List<Currency> findAll() throws InfrastructureException {
+    public List<Currency> findAll() throws DatabaseException {
 
         final String query = "SELECT * FROM Currencies";
 
@@ -33,11 +33,11 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 }
             }
         }  catch (SQLException e) {
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 
-    public Optional<Currency> findByCode(String code) throws InfrastructureException {
+    public Optional<Currency> findByCode(String code) throws DatabaseException {
 
         final String query = "SELECT * FROM Currencies WHERE Code = ?";
 
@@ -57,13 +57,13 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 
     private static final int INTEGRITY_CONSTRAINT_VIOLATION_CODE = 19;
 
-    public Currency save(Currency currency) throws InfrastructureException, AlreadyExistException {
+    public Currency save(Currency currency) throws DatabaseException, AlreadyExistException {
 
         final String query = "INSERT INTO Currencies(Code, FullName, Sign) VALUES (?,?,?) RETURNING ID";
 
@@ -93,7 +93,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 throw new AlreadyExistException("Currency already exists");
             }
 
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 

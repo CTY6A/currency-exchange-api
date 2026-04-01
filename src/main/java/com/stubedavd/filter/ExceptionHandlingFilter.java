@@ -3,7 +3,7 @@ package com.stubedavd.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stubedavd.dto.response.ErrorResponseDto;
 import com.stubedavd.exception.AlreadyExistException;
-import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.exception.DatabaseException;
 import com.stubedavd.exception.NotFoundException;
 import com.stubedavd.exception.ValidationException;
 import jakarta.servlet.*;
@@ -25,7 +25,7 @@ public class ExceptionHandlingFilter implements Filter {
 
             chain.doFilter(request, response);
 
-        } catch (InfrastructureException e) {
+        } catch (DatabaseException e) {
 
             writeError(httpResponse, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 

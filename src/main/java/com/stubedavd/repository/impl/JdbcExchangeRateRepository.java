@@ -1,7 +1,7 @@
 package com.stubedavd.repository.impl;
 
 import com.stubedavd.exception.AlreadyExistException;
-import com.stubedavd.exception.InfrastructureException;
+import com.stubedavd.exception.DatabaseException;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
 import com.stubedavd.repository.ExchangeRateRepository;
@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
-    public List<ExchangeRate> findAll() throws InfrastructureException {
+    public List<ExchangeRate> findAll() throws DatabaseException {
 
         final String query =
             """
@@ -55,11 +55,11 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 
-    public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws InfrastructureException {
+    public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws DatabaseException {
 
         final String query =
             """
@@ -98,13 +98,13 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 
     private static final int INTEGRITY_CONSTRAINT_VIOLATION_CODE = 19;
 
-    public ExchangeRate save(ExchangeRate exchangeRate) throws InfrastructureException, AlreadyExistException {
+    public ExchangeRate save(ExchangeRate exchangeRate) throws DatabaseException, AlreadyExistException {
 
         final String SAVE =
             """
@@ -140,11 +140,11 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 throw new AlreadyExistException("Exchange rate already exists");
             }
 
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 
-    public ExchangeRate update(ExchangeRate exchangeRate) throws InfrastructureException {
+    public ExchangeRate update(ExchangeRate exchangeRate) throws DatabaseException {
 
         final String UPDATE =
             """
@@ -178,7 +178,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new InfrastructureException("Database is available");
+            throw new DatabaseException("Database is available");
         }
     }
 
