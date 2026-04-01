@@ -13,13 +13,16 @@ import java.util.Optional;
 
 public class JdbcCurrencyRepository implements CurrencyRepository {
 
-    public List<Currency> findAll() throws DatabaseException {
+    public static final String FIND_ALL_QUERY = "SELECT * FROM Currencies";
+    public static final String FIND_BY_CODE_QUERY = "SELECT * FROM Currencies WHERE Code = ?";
+    public static final String SAVE_QUERY =
+            "INSERT INTO Currencies(Code, FullName, Sign) VALUES (?,?,?) RETURNING ID";
 
-        final String query = "SELECT * FROM Currencies";
+    public List<Currency> findAll() throws DatabaseException {
 
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+            try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_QUERY)){
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
@@ -39,11 +42,9 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
 
     public Optional<Currency> findByCode(String code) throws DatabaseException {
 
-        final String query = "SELECT * FROM Currencies WHERE Code = ?";
-
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE_QUERY)) {
 
                 preparedStatement.setString(1, code);
 
@@ -65,11 +66,9 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
 
     public Currency save(Currency currency) throws DatabaseException, AlreadyExistException {
 
-        final String query = "INSERT INTO Currencies(Code, FullName, Sign) VALUES (?,?,?) RETURNING ID";
-
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE_QUERY)) {
 
                 String code = currency.getCode();
                 String name = currency.getName();

@@ -18,30 +18,53 @@ import java.util.Optional;
 
 public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
-    public List<ExchangeRate> findAll() throws DatabaseException {
+    public static final String FIND_ALL_QUERY =
+                """
+                    SELECT ExchangeRates.ID AS "ExchangeRates.ID",
+                            BaseCurrency.ID AS "BaseCurrency.ID",
+                                BaseCurrency.Code AS "BaseCurrency.Code",
+                                BaseCurrency.FullName AS "BaseCurrency.FullName",
+                                BaseCurrency.Sign AS "BaseCurrency.Sign",
+                            TargetCurrency.ID AS "TargetCurrency.ID",
+                                TargetCurrency.Code AS "TargetCurrency.Code",
+                                TargetCurrency.FullName AS "TargetCurrency.FullName",
+                                TargetCurrency.Sign AS "TargetCurrency.Sign",
+                            Rate
+                    FROM ExchangeRates
+                    JOIN Currencies
+                        BaseCurrency ON BaseCurrency.ID = ExchangeRates.BaseCurrencyId
+                    JOIN Currencies
+                        TargetCurrency on TargetCurrency.ID = ExchangeRates.TargetCurrencyId
+              """;
 
-        final String query =
-            """
-                SELECT ExchangeRates.ID AS "ExchangeRates.ID",
-                        BaseCurrency.ID AS "BaseCurrency.ID",
-                            BaseCurrency.Code AS "BaseCurrency.Code",
-                            BaseCurrency.FullName AS "BaseCurrency.FullName",
-                            BaseCurrency.Sign AS "BaseCurrency.Sign",
-                        TargetCurrency.ID AS "TargetCurrency.ID",
-                            TargetCurrency.Code AS "TargetCurrency.Code",
-                            TargetCurrency.FullName AS "TargetCurrency.FullName",
-                            TargetCurrency.Sign AS "TargetCurrency.Sign",
-                        Rate
-                FROM ExchangeRates
-                JOIN Currencies
-                    BaseCurrency ON BaseCurrency.ID = ExchangeRates.BaseCurrencyId
-                JOIN Currencies
-                    TargetCurrency on TargetCurrency.ID = ExchangeRates.TargetCurrencyId
-            """;
+    public static final String FIND_BY_CODES_QUERY =
+            FIND_ALL_QUERY +
+                """
+                    WHERE BaseCurrency.Code = ? AND TargetCurrency.Code = ?
+                """;
+
+    public static final String SAVE_QUERY =
+                """
+                    INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate)
+                    VALUES (?,?,?)
+                    RETURNING ID
+                """;
+
+    public static final String UPDATE_QUERY =
+                """
+                    UPDATE ExchangeRates
+                    SET Rate = ?
+                    WHERE
+                        BaseCurrencyId = ? AND
+                        TargetCurrencyId = ?
+                    RETURNING ID;
+                """;
+
+    public List<ExchangeRate> findAll() throws DatabaseException {
 
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+            try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_QUERY)){
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
@@ -61,29 +84,9 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
     public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws DatabaseException {
 
-        final String query =
-            """
-                SELECT ExchangeRates.ID AS "ExchangeRates.ID",
-                        BaseCurrency.ID AS "BaseCurrency.ID",
-                            BaseCurrency.Code AS "BaseCurrency.Code",
-                            BaseCurrency.FullName AS "BaseCurrency.FullName",
-                            BaseCurrency.Sign AS "BaseCurrency.Sign",
-                        TargetCurrency.ID AS "TargetCurrency.ID",
-                            TargetCurrency.Code AS "TargetCurrency.Code",
-                            TargetCurrency.FullName AS "TargetCurrency.FullName",
-                            TargetCurrency.Sign AS "TargetCurrency.Sign",
-                        Rate
-                FROM ExchangeRates
-                JOIN Currencies
-                    BaseCurrency ON BaseCurrency.ID = ExchangeRates.BaseCurrencyId
-                JOIN Currencies
-                    TargetCurrency on TargetCurrency.ID = ExchangeRates.TargetCurrencyId
-                WHERE BaseCurrency.Code = ? AND TargetCurrency.Code = ?
-            """;
-
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODES_QUERY)) {
 
                 preparedStatement.setString(1, baseCode);
                 preparedStatement.setString(2, targetCode);
@@ -106,16 +109,9 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
     public ExchangeRate save(ExchangeRate exchangeRate) throws DatabaseException, AlreadyExistException {
 
-        final String SAVE =
-            """
-                INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate)
-                VALUES (?,?,?)
-                RETURNING ID
-            """;
-
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SAVE_QUERY)) {
 
                 Currency baseCurrency = exchangeRate.getBaseCurrency();
                 Currency targetCurrency = exchangeRate.getTargetCurrency();
@@ -146,19 +142,9 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
 
     public ExchangeRate update(ExchangeRate exchangeRate) throws DatabaseException {
 
-        final String UPDATE =
-            """
-                UPDATE ExchangeRates
-                SET Rate = ?
-                WHERE
-                    BaseCurrencyId = ? AND
-                    TargetCurrencyId = ?
-                RETURNING ID;
-            """;
-
         try (Connection connection = ConnectionProvider.getConnection()){
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_QUERY)) {
 
                 Currency baseCurrency = exchangeRate.getBaseCurrency();
                 Currency targetCurrency = exchangeRate.getTargetCurrency();
