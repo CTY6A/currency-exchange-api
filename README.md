@@ -154,7 +154,7 @@ databasePath=/currencies.db
 
 This project follows SOLID, DRY, and Clean Code principles.
 
-- **Presentation Layer (Servlets):** Servlets remain as "thin" as possible. They only handle HTTP requests, delegate logic to services, and return JSON responses.
+- **Presentation Layer (Servlets):** Servlets handle HTTP requests and return JSON responses. For exchange operations, servlets delegate logic to services. When there is no business logic, servlets query the repository directly.
 - **Service Layer:** Contains all business logic (including cross-rate calculation).
 - **Data Access Layer (Repository):** Implements safe JDBC operations with PreparedStatement and try-with-resources.
 - **DTO Pattern & MapStruct:** Separation of database models from Data Transfer Objects.
