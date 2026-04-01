@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 public final class Validator {
 
+    public static final int ONE_CODE_AND_SLASH = 4;
     public static final int TWO_CODES_AND_SLASH = 7;
 
     public static void validateCurrency(String name, String code, String sign) {
@@ -34,16 +35,15 @@ public final class Validator {
         }
 
         try {
-            System.out.println(rate);
             new BigDecimal(rate);
         } catch (NullPointerException | NumberFormatException e) {
-            throw new ValidationException("Rate is invalid");
+            throw new ValidationException("Input number is invalid");
         }
     }
 
     public static void validateOneCodePath(String pathInfo) {
 
-        if (pathInfo == null || pathInfo.trim().equals("/")) {
+        if (pathInfo == null || pathInfo.trim().length() != ONE_CODE_AND_SLASH) {
             throw new ValidationException("A required form field is missing");
         }
     }

@@ -33,7 +33,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 }
             }
         }  catch (SQLException e) {
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 
@@ -57,7 +57,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 
@@ -93,7 +93,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
                 throw new AlreadyExistException("Currency already exists");
             }
 
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 

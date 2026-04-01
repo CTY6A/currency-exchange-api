@@ -55,7 +55,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 
@@ -98,7 +98,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 
@@ -140,7 +140,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 throw new AlreadyExistException("Exchange rate already exists");
             }
 
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 
@@ -178,7 +178,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Database is available");
+            throw new DatabaseException("Database is not available");
         }
     }
 
