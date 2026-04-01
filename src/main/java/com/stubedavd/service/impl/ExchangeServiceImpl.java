@@ -22,17 +22,14 @@ public class ExchangeServiceImpl implements ExchangeService {
     public static final int CONVERTED_AMOUNT_SCALE = 2;
 
     private final ExchangeRateRepository exchangeRateRepository;
-    private final CurrencyRepository currencyRepository;
     private final ExchangeMapper exchangeMapper;
 
     public ExchangeServiceImpl(
             ExchangeRateRepository exchangeRateRepository,
-            CurrencyRepository currencyRepository,
             ExchangeMapper exchangeMapper
     ) {
 
         this.exchangeRateRepository = exchangeRateRepository;
-        this.currencyRepository = currencyRepository;
         this.exchangeMapper = exchangeMapper;
     }
 

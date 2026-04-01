@@ -50,7 +50,7 @@ public class ContextListener implements ServletContextListener {
         ExchangeRateService exchangeRateService =
                 new ExchangeRateServiceImpl(exchangeRateRepository, currencyRepository, exchangeRateMapper);
         ExchangeService exchangeService =
-                new ExchangeServiceImpl(exchangeRateRepository, currencyRepository, exchangeMapper);
+                new ExchangeServiceImpl(exchangeRateRepository, exchangeMapper);
 
         servletContext.setAttribute(OBJECT_MAPPER, objectMapper);
 
