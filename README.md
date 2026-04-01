@@ -105,12 +105,33 @@ All errors return JSON:
 
 ## 🚀 Installation and Deployment
 
-The application is compiled as a `.war` artifact and is designed to run in a servlet container (e.g., Apache Tomcat). Project has the embedded SQLite database, no separate SQL server is required.
+The application is compiled as a `.war` artifact and is designed to run in a servlet container (e.g., Apache Tomcat). Project uses embedded SQLite database, no separate SQL server is required.
 
 ### Requirements
 - Java 17+
 - Maven
 - Apache Tomcat 10.x (Jakarta EE 10)
+
+### Database Configuration
+
+Database connection is configured via external file `db.properties` located in resources folder.
+
+**Important:** The application does **NOT** automatically create the database. A pre-filled SQLite database `currencies.db` is included in the resources and is loaded as a classpath resource.
+
+#### db.properties structure:
+```properties
+driver=org.sqlite.JDBC
+databaseUrl=jdbc:sqlite:
+databasePath=/currencies.db
+```
+
+| Property | Description |
+|----------|-------------|
+| `driver` | JDBC driver class |
+| `databaseUrl` | JDBC URL prefix |
+| `databasePath` | Path to database file in classpath |
+
+**Limitation:** The `databasePath` must point to a resource available in the application classpath. To use a different database file, place it in `src/main/resources/` and update this property accordingly.
 
 ### Running the Project
 
@@ -123,9 +144,9 @@ The application is compiled as a `.war` artifact and is designed to run in a ser
    ```bash
    mvn clean package
    ```
-3. Copy the built file from `target/currency-exchange-1.0-SNAPSHOT.war` to your Tomcat's `webapps/` folder.
+3. Copy the built file from `target/currency-exchange-1.0.war` to your Tomcat's `webapps/` folder.
 
-4. Start Tomcat. The application will automatically create the SQLite database.
+4. Start Tomcat.
 
 5. The API will be available at: `http://localhost:8080/currency-exchange-1.0`
 
@@ -170,8 +191,9 @@ This project follows SOLID, DRY, and Clean Code principles.
 │   │       ├───servlet        // Controllers
 │   │       │   ├───currency   // Currency endpoints
 │   │       │   └───exchange   // Exchange endpoints
-│   │       └───utils         // Utilities
+│   │       └───util         // Utilities
 │   ├───resources
+│   │   ├───db.properties     // Database configuration
 │   │   └───currencies.db     // SQLite database
 │   └───webapp                 // Web context
 ```

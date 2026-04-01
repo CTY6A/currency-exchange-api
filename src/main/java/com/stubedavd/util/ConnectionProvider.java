@@ -4,17 +4,23 @@ import com.stubedavd.exception.DatabaseException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public final class ConnectionProvider {
 
-    private static final String DRIVER = "org.sqlite.JDBC";
-    private static final String DATABASE_URL = "jdbc:sqlite:";
-    private static final String DATABASE_PATH = "/currencies.db";
+    private static final String DATABASE_PROPERTIES_PATH = "db.properties";
+
+    private static final String DRIVER_PROPERTY_KEY = "driver";
+    private static final String DATABASE_URL_PROPERTY_KEY = "databaseUrl";
+    private static final String DATABASE_PATH_PROPERTY_KEY = "databasePath";
 
     public static final int MAX_POOL_SIZE = 10;
     public static final int MIN_IDLE = 2;
@@ -23,6 +29,10 @@ public final class ConnectionProvider {
     public static final int MAX_LIFETIME_MS = 1800000;
 
     private static HikariDataSource dataSource;
+
+    private static String driver;
+    private static String databaseUrl;
+    private static String databasePath;
 
     private ConnectionProvider() {
 
@@ -34,10 +44,12 @@ public final class ConnectionProvider {
             return;
         }
 
+        readProperties();
+
         try {
 
-            Class.forName(DRIVER);
-            URL resource = ConnectionProvider.class.getResource(DATABASE_PATH);
+            Class.forName(driver);
+            URL resource = ConnectionProvider.class.getResource(databasePath);
             HikariConfig config = getHikariConfig(resource);
 
             dataSource = new HikariDataSource(config);
@@ -46,17 +58,33 @@ public final class ConnectionProvider {
         }
     }
 
+    private static void readProperties() {
+
+        Properties properties = new Properties();
+
+        try (InputStream inputStream = new FileInputStream(DATABASE_PROPERTIES_PATH)) {
+
+            properties.load(inputStream);
+
+            driver = properties.getProperty(DRIVER_PROPERTY_KEY);
+            databaseUrl = properties.getProperty(DATABASE_URL_PROPERTY_KEY);
+            databasePath = properties.getProperty(DATABASE_PATH_PROPERTY_KEY);
+        } catch (IOException e) {
+            throw new DatabaseException("Database properties could not be read");
+        }
+    }
+
     private static HikariConfig getHikariConfig(URL resource) throws FileNotFoundException, URISyntaxException {
 
         if (resource == null) {
-            throw new FileNotFoundException(DATABASE_PATH);
+            throw new FileNotFoundException(databasePath);
         }
 
-        String jdbcUrl = DATABASE_URL + resource.toURI().getPath();
+        String jdbcUrl = databaseUrl + resource.toURI().getPath();
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(jdbcUrl);
-        config.setDriverClassName(DRIVER);
+        config.setDriverClassName(driver);
         config.setMaximumPoolSize(MAX_POOL_SIZE);
         config.setMinimumIdle(MIN_IDLE);
         config.setConnectionTimeout(CONNECTION_TIMEOUT_MS);
