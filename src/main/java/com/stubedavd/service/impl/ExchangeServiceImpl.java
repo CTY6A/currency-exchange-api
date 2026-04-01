@@ -5,7 +5,6 @@ import com.stubedavd.dto.request.ExchangeRequestDto;
 import com.stubedavd.exception.NotFoundException;
 import com.stubedavd.dto.response.ExchangeResponseDto;
 import com.stubedavd.mapper.ExchangeMapper;
-import com.stubedavd.repository.CurrencyRepository;
 import com.stubedavd.repository.ExchangeRateRepository;
 import com.stubedavd.model.Currency;
 import com.stubedavd.model.ExchangeRate;
