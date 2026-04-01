@@ -127,7 +127,7 @@ The application is compiled as a `.war` artifact and is designed to run in a ser
 
 4. Start Tomcat. The application will automatically create the SQLite database.
 
-5. The API will be available at: `http://localhost:8080/`
+5. The API will be available at: `http://localhost:8080/currency-exchange-1.0`
 
 ## 🎯 Implementation Highlights
 
