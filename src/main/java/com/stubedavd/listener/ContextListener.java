@@ -1,5 +1,6 @@
 package com.stubedavd.listener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -28,11 +29,14 @@ public class ContextListener implements ServletContextListener {
     public static final String EXCHANGE_MAPPER = "exchangeMapper";
     public static final String EXCHANGE_RATE_SERVICE = "exchangeRateService";
     public static final String EXCHANGE_SERVICE = "exchangeService";
+    public static final String OBJECT_MAPPER = "objectMapper";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
 
         ConnectionProvider.init();
+
+        ObjectMapper objectMapper = new ObjectMapper();
 
         ServletContext servletContext = sce.getServletContext();
 
@@ -47,6 +51,8 @@ public class ContextListener implements ServletContextListener {
                 new ExchangeRateServiceImpl(exchangeRateRepository, currencyRepository, exchangeRateMapper);
         ExchangeService exchangeService =
                 new ExchangeServiceImpl(exchangeRateRepository, currencyRepository, exchangeMapper);
+
+        servletContext.setAttribute(OBJECT_MAPPER, objectMapper);
 
         servletContext.setAttribute(CURRENCY_REPOSITORY, currencyRepository);
         servletContext.setAttribute(EXCHANGE_RATE_REPOSITORY, exchangeRateRepository);
