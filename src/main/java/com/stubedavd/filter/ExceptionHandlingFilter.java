@@ -40,6 +40,9 @@ public class ExceptionHandlingFilter implements Filter {
         } catch (NotFoundException e) {
 
             writeError(httpResponse, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+
+            writeError(httpResponse, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unknown server error");
         }
     }
 
