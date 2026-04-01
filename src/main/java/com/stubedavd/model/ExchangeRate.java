@@ -17,7 +17,7 @@ public class ExchangeRate {
         this.rate = rate;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

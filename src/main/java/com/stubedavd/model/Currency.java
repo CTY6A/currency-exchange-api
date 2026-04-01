@@ -15,7 +15,7 @@ public class Currency {
         this.sign = sign;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
